@@ -1,4 +1,4 @@
-package com.example.bryan_34309861_a3_app.database
+package com.example.bryan_34309861_a3_app.data.patient
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -6,9 +6,11 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "patients")
 data class Patient(
     @PrimaryKey(autoGenerate = true)
-    val userId: Int = 0,
-    val name: String,
-    val phoneNumber: Int,
+    val id: Int = 0,
+    val patientId: String = "",
+    var patientPassword: String = "",
+    val name: String = "",
+    val phoneNumber: String,
     val sex: String,
     val totalScore: Float,
     val discretionaryScore: Float,

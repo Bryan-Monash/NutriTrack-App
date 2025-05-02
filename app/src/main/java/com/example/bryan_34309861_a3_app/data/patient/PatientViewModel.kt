@@ -1,4 +1,4 @@
-package com.example.bryan_34309861_a3_app.database
+package com.example.bryan_34309861_a3_app.data.patient
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -8,27 +8,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class PatientViewModel(context: Context): ViewModel() {
-    private val patientRepo = PatientRepository(context)
+    val patientRepo = PatientRepository(context)
     val allPatients: Flow<List<Patient>> = patientRepo.getAllPatients()
 
-    fun insert(patient: Patient) = viewModelScope.launch {
-        patientRepo.insert(patient)
+    suspend fun insert(patient: Patient) = patientRepo.insertPatient(patient)
+
+    fun getAllPatientsId() = patientRepo.getAllPatientsId()
+
+    suspend fun getPatientById(patientId: String): Patient {
+        return patientRepo.getPatientById(patientId)
     }
 
-    fun delete(patient: Patient) = viewModelScope.launch {
-        patientRepo.delete(patient)
-    }
-
-    fun update(patient: Patient) = viewModelScope.launch {
-        patientRepo.update(patient)
-    }
-
-    fun deleteAllPatients() = viewModelScope.launch {
-        patientRepo.deleteAllPatients()
-    }
-
-    fun deletePatientById(patientId: Int) = viewModelScope.launch {
-        patientRepo.deletePatientById(patientId)
+    suspend fun updatePassword(patientId: String, newPassword: String) {
+        patientRepo.updatePassword(patientId, newPassword)
     }
 
     class PatientViewModelFactory(context: Context) : ViewModelProvider.Factory {

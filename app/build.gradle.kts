@@ -42,12 +42,15 @@ android {
 
 dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.9")
+    implementation(libs.androidx.room.runtime.android)
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:$room_version")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.compose.runtime:runtime-livedata:1.5.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
