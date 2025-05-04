@@ -22,8 +22,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,8 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
 import com.example.bryan_34309861_a3_app.R
+import com.example.bryan_34309861_a3_app.data.patient.Patient
 import com.example.bryan_34309861_a3_app.data.patient.PatientViewModel
-import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,9 +51,14 @@ fun RegisterScreen(
 ) {
     val patientId = remember { mutableStateOf("") }
     val phoneNumber = remember { mutableStateOf("") }
+    val patientName = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val confirmPassword = remember { mutableStateOf("") }
-    val allPatientId by patientViewModel.getAllPatientsId().collectAsState(initial = emptyList())
+    val allPatientId by patientViewModel.getAllPatientsId()
+        .collectAsState(initial = emptyList())
+
+    val thePatient: State<Patient?> = patientViewModel.getPatientById(patientId.value)
+        .observeAsState()
 
     val _context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -119,6 +126,13 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
+            value = patientName.value,
+            onValueChange = { patientName.value = it },
+            label = { Text("Enter Name", fontSize = 14.sp) },
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(0.85f),
             value = phoneNumber.value,
             onValueChange = { phoneNumber.value = it },
             label = { Text("Phone Number", fontSize = 14.sp) },
@@ -149,25 +163,35 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = {
-                runBlocking {
-                    var thePatient = patientViewModel.getPatientById(patientId.value)
-
-                    if (thePatient.patientPassword != "") {
-                      Toast.makeText(_context, "Patient is already registered", Toast.LENGTH_SHORT)
-                          .show()
-                    } else if (thePatient.phoneNumber != phoneNumber.value) {
-                        Toast.makeText(_context, "Incorrect Phone Number", Toast.LENGTH_SHORT)
-                            .show()
-                    } else if (confirmPassword.value != password.value) {
-                        Toast.makeText(_context, "Password does not match", Toast.LENGTH_SHORT)
-                            .show()
-                    } else {
-                        patientViewModel.updatePassword(patientId = patientId.value, newPassword = password.value)
+                when {
+                    thePatient.value == null -> {
+                        Toast.makeText(_context, "Please select a valid Patient ID", Toast.LENGTH_SHORT).show()
+                    }
+                    thePatient.value?.patientPassword != "" -> {
+                        Toast.makeText(_context, "Patient is already registered", Toast.LENGTH_SHORT).show()
+                    }
+                    thePatient.value?.phoneNumber != phoneNumber.value -> {
+                        Toast.makeText(_context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
+                    }
+                    password.value != confirmPassword.value -> {
+                        Toast.makeText(_context, "Password does not match", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        val updatedPatient = thePatient.value?.copy(
+                            patientPassword = password.value,
+                            phoneNumber = phoneNumber.value,
+                            name = patientName.value
+                        )
+                        updatedPatient?.let {
+                            patientViewModel.updatePatient(it)
+                        }
                         navController.navigate(PatientsDashboardScreen.Login.route)
                     }
                 }
             },
-            modifier = Modifier.padding(top = 24.dp)
+            modifier = Modifier
+                .padding(top = 24.dp)
+                .fillMaxWidth(0.85f)
         ) {
             Text("Register")
         }
@@ -175,7 +199,9 @@ fun RegisterScreen(
         Button(
             onClick = {
                 navController.navigate(PatientsDashboardScreen.Login.route)
-            }
+            },
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
         ) {
             Text("Login")
         }

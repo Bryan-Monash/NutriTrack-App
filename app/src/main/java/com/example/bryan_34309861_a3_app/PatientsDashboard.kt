@@ -10,15 +10,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntakeViewModel
 import com.example.bryan_34309861_a3_app.data.patient.PatientViewModel
+import com.example.bryan_34309861_a3_app.screens.HomeScreen
+import com.example.bryan_34309861_a3_app.screens.InsightScreen
+import com.example.bryan_34309861_a3_app.screens.MyBottomAppBar
+import com.example.bryan_34309861_a3_app.screens.MyTopAppBar
 import com.example.bryan_34309861_a3_app.screens.PatientLoginScreen
 import com.example.bryan_34309861_a3_app.screens.QuestionnaireScreen
 import com.example.bryan_34309861_a3_app.screens.RegisterScreen
@@ -27,12 +33,14 @@ import com.example.bryan_34309861_a3_app.ui.theme.Bryan_34309861_A3_appTheme
 
 
 sealed class PatientsDashboardScreen(val route: String) {
-    object Welcome : PatientsDashboardScreen("welcome")
-    object Login : PatientsDashboardScreen("login")
-    object Register : PatientsDashboardScreen("register")
-    object Questionnaire : PatientsDashboardScreen("questionnaire")
-    object Home : PatientsDashboardScreen("home")
-    object Insight : PatientsDashboardScreen("insight")
+    object Welcome : PatientsDashboardScreen("Welcome")
+    object Login : PatientsDashboardScreen("Login")
+    object Register : PatientsDashboardScreen("Register")
+    object Questionnaire : PatientsDashboardScreen("Questionnaire")
+    object Home : PatientsDashboardScreen("Home")
+    object Insight : PatientsDashboardScreen("Insight")
+    object NutriCoach: PatientsDashboardScreen("NutriCoach")
+    object Settings: PatientsDashboardScreen("Settings")
 }
 
 class PatientsDashboard : ComponentActivity() {
@@ -49,8 +57,27 @@ class PatientsDashboard : ComponentActivity() {
             )[PatientViewModel::class.java]
 
             val navController = rememberNavController()
+            val currentRoute by navController.currentBackStackEntryAsState()
+
             Bryan_34309861_A3_appTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        if (currentRoute?.destination?.route in listOf(
+                                PatientsDashboardScreen.Home.route,
+                                PatientsDashboardScreen.Insight.route,
+                                PatientsDashboardScreen.NutriCoach.route,
+                                PatientsDashboardScreen.Settings.route
+                            )) {
+                            MyBottomAppBar(navController)
+                        }
+                    },
+                    topBar = { if (currentRoute?.destination?.route ==
+                            PatientsDashboardScreen.Questionnaire.route) {
+                            MyTopAppBar(navController)
+                        }
+                    }
+                ) { innerPadding ->
                     PatientDashboardContent(
                         modifier = Modifier.padding(innerPadding),
                         patientViewModel = patientViewModel,
@@ -104,9 +131,15 @@ fun NavHostPatient(
             QuestionnaireScreen(foodIntakeViewModel, navController)
         }
         composable(PatientsDashboardScreen.Home.route) {
-
+            HomeScreen(navController, patientViewModel)
         }
         composable(PatientsDashboardScreen.Insight.route) {
+            InsightScreen(navController, patientViewModel)
+        }
+        composable(PatientsDashboardScreen.NutriCoach.route) {
+
+        }
+        composable(PatientsDashboardScreen.Settings.route) {
 
         }
     }

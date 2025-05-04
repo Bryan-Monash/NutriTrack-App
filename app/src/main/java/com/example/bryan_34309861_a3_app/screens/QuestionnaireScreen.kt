@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -80,36 +82,46 @@ fun QuestionnaireScreen(
         .observeAsState()
 
     Log.d("FOOD INTAKE", "${aFoodIntake.value}")
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            MyTopAppBar(navController)
-        }
-    ) { innerPadding ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
         Column(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
+                .fillMaxWidth()
+                .weight(0.25f),
+            verticalArrangement = Arrangement.Top
         ) {
             CheckBoxQuestion(foodIntakeViewModel, aFoodIntake)
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(4.dp))
+        }
+        HorizontalDivider()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.3f),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
             Persona(foodIntakeViewModel, aFoodIntake)
-            Spacer(modifier = Modifier.height(8.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(8.dp))
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.25f),
+            verticalArrangement = Arrangement.Top
+        ) {
             Timings(foodIntakeViewModel, aFoodIntake)
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = {
-                    navController.navigate(PatientsDashboardScreen.Home.route)
-                }
-            ) {
-                Text("Save Preferences")
+        }
+        Button(
+            onClick = {
+                navController.navigate(PatientsDashboardScreen.Home.route)
             }
+        ) {
+            Text("Save Preferences")
         }
     }
 }
@@ -174,8 +186,8 @@ fun CheckBoxQuestion(
                                     this?.set(index, it)
                                 }
                                 val updatedFoodIntake =
-                                    updatedCheckboxes?.let{ it1 ->
-                                        aFoodIntake.value?.copy(checkboxes = it1)
+                                    updatedCheckboxes?.let{ newCheckboxes ->
+                                        aFoodIntake.value?.copy(checkboxes = newCheckboxes)
                                     }
                                 updatedFoodIntake?.let {
                                     foodIntakeViewModel.updateFoodIntake(it)
@@ -193,6 +205,7 @@ fun CheckBoxQuestion(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -406,30 +419,45 @@ fun InputRow(
                 fontSize = 12.sp,
                 modifier = Modifier.width(280.dp)
             )
-            OutlinedTextField(
-                value = initialTime?: "",
-                onValueChange = {  },
-                textStyle = TextStyle(fontSize = 13.sp),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number
-                ),
-                singleLine = true,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .weight(1f),
-                leadingIcon = {
-                    Icon(
-                        Icons.Filled.DateRange,
-                        "time",
-                        Modifier
-                            .clickable {
-                                mTimePickerDialog.show()
-                            }
-                            .size(16.dp)
-                    )
-                }
-            )
+                    .weight(1f)
+                    .clickable { mTimePickerDialog.show() }
+            ) {
+                OutlinedTextField(
+                    value = initialTime ?: "",
+                    onValueChange = { },
+                    textStyle = TextStyle(fontSize = 13.sp),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number
+                    ),
+                    singleLine = true,
+                    enabled = false,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.DateRange,
+                            "time",
+                            Modifier
+                                .clickable {
+                                    mTimePickerDialog.show()
+                                }
+                                .size(16.dp)
+                        )
+                    },
+                    colors = OutlinedTextFieldDefaults.colors().copy(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledIndicatorColor = MaterialTheme.colorScheme.outline,
+                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+            }
         }
     }
 }

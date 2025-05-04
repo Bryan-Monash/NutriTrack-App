@@ -3,22 +3,14 @@ package com.example.bryan_34309861_a3_app
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
-import android.nfc.Tag
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
+import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntake
 import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntakeViewModel
 import com.example.bryan_34309861_a3_app.data.patient.Patient
 import com.example.bryan_34309861_a3_app.data.patient.PatientViewModel
@@ -26,7 +18,6 @@ import com.example.bryan_34309861_a3_app.ui.theme.Bryan_34309861_A3_appTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -40,7 +31,11 @@ class MainActivity : ComponentActivity() {
 //                this, PatientViewModel.PatientViewModelFactory(this@MainActivity)
 //            )[PatientViewModel::class.java]
 //
-//            readCSV(_context, "data.csv", patientViewModel)
+//            val foodIntakeViewModel: FoodIntakeViewModel = ViewModelProvider(
+//                this, FoodIntakeViewModel.FoodIntakeViewModelFactory(this@MainActivity)
+//            )[FoodIntakeViewModel::class.java]
+//
+//            readCSV(_context, "data.csv", patientViewModel, foodIntakeViewModel)
 
             Bryan_34309861_A3_appTheme {
                 val _context = LocalContext.current
@@ -54,6 +49,7 @@ fun readCSV(
     context: Context,
     fileName: String,
     patientViewModel: PatientViewModel,
+    foodIntakeViewModel: FoodIntakeViewModel
 ) {
     val assets = context.assets
     try {
@@ -105,8 +101,12 @@ fun readCSV(
                         unsaturatedFatScore = values[61].toFloat()
                     )
                 }
+                val newFoodIntake = FoodIntake(
+                    patientId = values[1]
+                )
                 CoroutineScope(Dispatchers.IO).launch {
-                    patientViewModel.insert(patient = newPatient)
+                    patientViewModel.insertPatient(patient = newPatient)
+                    foodIntakeViewModel.insertFoodIntake(foodIntake = newFoodIntake)
                     Log.d("NEW PATIENT", "Added new patient: $newPatient")
                 }
             }

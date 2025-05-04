@@ -1,5 +1,6 @@
 package com.example.bryan_34309861_a3_app.data.patient
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -13,7 +14,7 @@ interface PatientDao {
     suspend fun insert(patient: Patient)
 
     @Update
-    suspend fun update(patient: Patient)
+    suspend fun updatePatient(patient: Patient)
 
     @Delete
     suspend fun delete(patient: Patient)
@@ -25,8 +26,5 @@ interface PatientDao {
     fun getAllPatientsId(): Flow<List<String>>
 
     @Query("SELECT * FROM patients WHERE patientId = :patientId")
-    suspend fun getPatientById(patientId: String): Patient
-
-    @Query("UPDATE patients SET patientPassword = :newPassword WHERE patientId =:patientId")
-    suspend fun updatePassword(patientId: String, newPassword: String)
+    fun getPatientById(patientId: String): LiveData<Patient?>
 }

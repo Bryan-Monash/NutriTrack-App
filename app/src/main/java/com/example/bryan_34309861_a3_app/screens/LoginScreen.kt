@@ -24,8 +24,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
@@ -61,6 +64,9 @@ fun PatientLoginScreen(
     val password = remember { mutableStateOf("") }
     var isLoggedIn = remember { mutableStateOf(false) }
     val allPatientId by patientViewModel.getAllPatientsId().collectAsState(initial = emptyList())
+
+    val thePatient = patientViewModel.getPatientById(patientId.value)
+        .observeAsState()
 
     val _context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -142,7 +148,7 @@ fun PatientLoginScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = {
-                isLoggedIn.value = isAuthorized(patientId.value, password.value, patientViewModel)
+                isLoggedIn.value = isAuthorized(patientId.value, password.value, thePatient)
 
                 if (isLoggedIn.value) {
                     AuthManager.login(patientId.value)
@@ -155,7 +161,7 @@ fun PatientLoginScreen(
                         .show()
                 }
             },
-            modifier = Modifier.padding(top = 24.dp)
+            modifier = Modifier.padding(top = 24.dp).fillMaxWidth(0.85f)
         ) {
             Text("Continue")
         }
@@ -163,7 +169,8 @@ fun PatientLoginScreen(
         Button(
             onClick = {
                 navController.navigate(PatientsDashboardScreen.Register.route)
-            }
+            },
+            modifier = Modifier.fillMaxWidth(0.85f)
         ) {
             Text("Register")
         }
@@ -173,21 +180,15 @@ fun PatientLoginScreen(
 fun isAuthorized(
     patientId: String,
     password: String,
-    patientViewModel: PatientViewModel
+    thePatient: State<Patient?>,
 ): Boolean {
     if (patientId == "") return false
-    var aPatient: Patient
 
-    runBlocking {
-        var aFlowPatient: Patient = patientViewModel.getPatientById(patientId)
-        aPatient = aFlowPatient
-    }
+    Log.d("THE PATIENT", "${thePatient.value}")
 
-    Log.d("THE PATIENT", "${aPatient}")
-
-    if (aPatient == null) return false
-    if (aPatient.patientPassword.isEmpty() || password.isEmpty()) return false
-    if (password != aPatient.patientPassword) return false
+    if (thePatient.value == null) return false
+    if (thePatient.value?.patientPassword?.isEmpty() == true || password.isEmpty()) return false
+    if (password != thePatient.value?.patientPassword.toString()) return false
 
     return true
 }
