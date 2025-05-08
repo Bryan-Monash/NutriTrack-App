@@ -6,6 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
+import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
 import com.example.bryan_34309861_a3_app.data.AuthManager
 import com.example.bryan_34309861_a3_app.data.patient.Patient
 import com.example.bryan_34309861_a3_app.data.patient.PatientRepository
@@ -26,6 +28,19 @@ class SettingsViewModel(context: Context): ViewModel() {
     fun loadPatient(patientId: String) {
         viewModelScope.launch {
             _thePatient.value = repository.getPatientById(patientId)
+        }
+    }
+
+    fun logout(navController: NavHostController): () -> Unit {
+        return {
+            AuthManager.logout()
+            navController.navigate(PatientsDashboardScreen.PatientLogin.route)
+        }
+    }
+
+    fun clinicianLogin(navController: NavHostController): () -> Unit {
+        return {
+            navController.navigate(PatientsDashboardScreen.ClinicianLogin.route)
         }
     }
 

@@ -1,7 +1,6 @@
 package com.example.bryan_34309861_a3_app.screens
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,8 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -39,16 +36,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
 import com.example.bryan_34309861_a3_app.R
 import com.example.bryan_34309861_a3_app.data.AuthManager
-import com.example.bryan_34309861_a3_app.data.patient.Patient
-import com.example.bryan_34309861_a3_app.data.patient.PatientViewModel
 import com.example.bryan_34309861_a3_app.utils.UiState
-import com.example.bryan_34309861_a3_app.viewModels.LoginViewModel
+import com.example.bryan_34309861_a3_app.viewModels.PatientLoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,20 +50,15 @@ fun PatientLoginScreen(
     navController: NavHostController,
     context: Context
 ) {
-    val loginViewModel: LoginViewModel = viewModel(
-        factory = LoginViewModel.LoginViewModelFactory(context)
+    val patientLoginViewModel: PatientLoginViewModel = viewModel(
+        factory = PatientLoginViewModel.PatientLoginViewModelFactory(context)
     )
 
     val patientId = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
-    var isLoggedIn = remember { mutableStateOf(false) }
-    val allPatients = loginViewModel.allPatients
+    val allPatients = patientLoginViewModel.allPatients
         .observeAsState()
 
-    val thePatient = loginViewModel.getPatientById(patientId.value)
-        .observeAsState()
-
-    val _context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
 
     Column(
@@ -127,6 +116,7 @@ fun PatientLoginScreen(
                         onClick = {
                             patientId.value = patient.patientId
                             expanded = !expanded
+                            patientLoginViewModel.getPatientById(patientId.value)
                         }
                     )
                 }
@@ -148,28 +138,12 @@ fun PatientLoginScreen(
         )
         Spacer(modifier = Modifier.height(12.dp))
         Button(
-            onClick = {
-                val result = thePatient.value?.let {
-                    loginViewModel.isAuthorized(
-                        patientId.value,
-                        password.value,
-                        it
-                    )
-                } ?: UiState.Error("Patient not selected")
-
-                when (result) {
-                    is UiState.Success -> {
-                        AuthManager.login(patientId.value)
-                        Toast.makeText(_context, result.outputText, Toast.LENGTH_SHORT).show()
-                        navController.navigate(PatientsDashboardScreen.Questionnaire.route)
-                    }
-                    is UiState.Error -> {
-                        Toast.makeText(_context, result.errorMessage, Toast.LENGTH_SHORT).show()
-                    }
-                    is UiState.Loading -> { }
-                    is UiState.Initial -> { }
-                }
-            },
+            onClick = patientLoginViewModel.isAuthorized(
+                patientId.value,
+                password.value,
+                context,
+                navController
+            ),
             modifier = Modifier.padding(top = 24.dp).fillMaxWidth(0.85f)
         ) {
             Text("Continue")

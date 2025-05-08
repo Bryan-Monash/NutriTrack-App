@@ -89,9 +89,14 @@ fun SettingsScreen(
             icon = Icons.Default.ExitToApp,
             text = "Logout",
             trailingIcon = Icons.Default.ArrowForward,
-            onClick = {
-                navController.navigate(PatientsDashboardScreen.Login.route)
-            }
+            onClick = settingsViewModel.logout(navController)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        SettingRow(
+            icon = Icons.Default.Person,
+            text = "Clinician Login",
+            trailingIcon = Icons.Default.ArrowForward,
+            onClick = settingsViewModel.clinicianLogin(navController)
         )
     }
 }

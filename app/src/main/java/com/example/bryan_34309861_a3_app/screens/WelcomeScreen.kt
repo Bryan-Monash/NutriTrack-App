@@ -57,7 +57,7 @@ fun WelcomeScreen(
         Spacer(modifier = Modifier.height(48.dp))
         Button(onClick = {
             // go to login page
-            navController.navigate(PatientsDashboardScreen.Login.route)
+            navController.navigate(PatientsDashboardScreen.PatientLogin.route)
         },
             modifier = Modifier.size(width = 300.dp, height = 50.dp)
         ) {

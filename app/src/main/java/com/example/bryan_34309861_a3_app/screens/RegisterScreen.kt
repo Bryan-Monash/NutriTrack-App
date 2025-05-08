@@ -170,24 +170,14 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = {
-                when {
-                    thePatient.value == null -> {
-                        Toast.makeText(_context, "Please select a valid Patient ID", Toast.LENGTH_SHORT).show()
-                    }
-                    thePatient.value?.patientPassword != "" -> {
-                        Toast.makeText(_context, "Patient is already registered", Toast.LENGTH_SHORT).show()
-                    }
-                    thePatient.value?.phoneNumber != phoneNumber -> {
-                        Toast.makeText(_context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
-                    }
-                    password != confirmPassword -> {
-                        Toast.makeText(_context, "Password does not match", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> {
-                        registerViewModel.updatePatientDetails(thePatient.value!!, patientName, password)
-                        navController.navigate(PatientsDashboardScreen.Login.route)
-                    }
-                }
+                registerViewModel.validatePatient(
+                    patientName,
+                    phoneNumber,
+                    password,
+                    confirmPassword,
+                    context,
+                    navController
+                )
             },
             modifier = Modifier
                 .padding(top = 24.dp)
@@ -198,7 +188,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = {
-                navController.navigate(PatientsDashboardScreen.Login.route)
+                navController.navigate(PatientsDashboardScreen.PatientLogin.route)
             },
             modifier = Modifier
                 .fillMaxWidth(0.85f)

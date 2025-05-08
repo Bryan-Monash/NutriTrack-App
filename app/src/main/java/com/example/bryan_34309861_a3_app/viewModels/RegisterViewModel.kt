@@ -1,12 +1,15 @@
 package com.example.bryan_34309861_a3_app.viewModels
 
 import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
 import com.example.bryan_34309861_a3_app.data.patient.Patient
 import com.example.bryan_34309861_a3_app.data.patient.PatientRepository
 import kotlinx.coroutines.launch
@@ -39,10 +42,38 @@ class RegisterViewModel(context: Context): ViewModel() {
         return thePatient
     }
 
-    fun updatePatientDetails(patient: Patient, name: String, password: String) {
+    fun updatePatientDetails(name: String, password: String) {
         viewModelScope.launch {
-            repository.updatePatientDetails(patient, name, password)
+            repository.updatePatientDetails(thePatient.value!!, name, password)
             loadPatients()
+        }
+    }
+
+    fun validatePatient(
+        patientName: String,
+        phoneNumber: String,
+        password: String,
+        confirmPassword: String,
+        context: Context,
+        navController: NavHostController
+    ) {
+        return when {
+            thePatient.value == null -> {
+                Toast.makeText(context, "Please select a valid Patient ID", Toast.LENGTH_SHORT).show()
+            }
+            thePatient.value?.patientPassword != "" -> {
+                Toast.makeText(context, "Patient is already registered", Toast.LENGTH_SHORT).show()
+            }
+            thePatient.value?.phoneNumber != phoneNumber -> {
+                Toast.makeText(context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
+            }
+            password != confirmPassword -> {
+                Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                updatePatientDetails(patientName, password)
+                navController.navigate(PatientsDashboardScreen.PatientLogin.route)
+            }
         }
     }
 
