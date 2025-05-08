@@ -1,6 +1,7 @@
 package com.example.bryan_34309861_a3_app.screens
 
 import android.app.TimePickerDialog
+import android.content.Context
 import android.icu.util.Calendar
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -63,25 +64,52 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
 import com.example.bryan_34309861_a3_app.R
 import com.example.bryan_34309861_a3_app.data.AuthManager
 import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntake
 import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntakeViewModel
+import com.example.bryan_34309861_a3_app.utils.ErrorScreen
+import com.example.bryan_34309861_a3_app.utils.LoadingScreen
+import com.example.bryan_34309861_a3_app.utils.UiState
+import com.example.bryan_34309861_a3_app.viewModels.QuestionnaireViewModel
 
 data class PersonaInfo(val imageRes: Int, val descriptionRes: Int, val name: String)
 
 @Composable
 fun QuestionnaireScreen(
-    foodIntakeViewModel: FoodIntakeViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    context: Context
 ) {
-    val currentPatientId: String = AuthManager.getPatientId()?: ""
-    val aFoodIntake: State<FoodIntake?> = foodIntakeViewModel.getFoodIntakeByPatientId(currentPatientId)
+    val questionnaireViewModel: QuestionnaireViewModel = viewModel(
+        factory = QuestionnaireViewModel.QuestionnaireViewModelFactory(context)
+    )
+
+    val uiState = questionnaireViewModel.uiState
         .observeAsState()
 
-    Log.d("FOOD INTAKE", "${aFoodIntake.value}")
+    when (val state = uiState.value) {
+        is UiState.Loading -> {
+            LoadingScreen()
+        }
+
+        is UiState.Success -> {
+            QuestionnaireScreenContent(navController, questionnaireViewModel)
+        }
+        is UiState.Error -> {
+            ErrorScreen(state.errorMessage)
+        }
+        else -> Unit
+    }
+}
+
+@Composable
+fun QuestionnaireScreenContent(
+    navController: NavHostController,
+    questionnaireViewModel: QuestionnaireViewModel
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -95,7 +123,7 @@ fun QuestionnaireScreen(
                 .weight(0.25f),
             verticalArrangement = Arrangement.Top
         ) {
-            CheckBoxQuestion(foodIntakeViewModel, aFoodIntake)
+            CheckBoxQuestion(questionnaireViewModel)
         }
         HorizontalDivider()
         Column(
@@ -104,7 +132,7 @@ fun QuestionnaireScreen(
                 .weight(0.3f),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Persona(foodIntakeViewModel, aFoodIntake)
+            Persona(questionnaireViewModel)
         }
         Spacer(modifier = Modifier.height(16.dp))
         HorizontalDivider()
@@ -114,7 +142,7 @@ fun QuestionnaireScreen(
                 .weight(0.25f),
             verticalArrangement = Arrangement.Top
         ) {
-            Timings(foodIntakeViewModel, aFoodIntake)
+            Timings(questionnaireViewModel)
         }
         Button(
             onClick = {
@@ -154,13 +182,13 @@ fun MyTopAppBar(
 
 @Composable
 fun CheckBoxQuestion(
-    foodIntakeViewModel: FoodIntakeViewModel,
-    aFoodIntake: State<FoodIntake?>
+    questionnaireViewModel: QuestionnaireViewModel,
 ) {
     val categories = listOf("Fruits", "Vegetables", "Grains", "Red Meat", "Seafood",
         "Poultry", "Fish", "Eggs", "Nuts/Seeds")
 
-    val checkboxStates = aFoodIntake.value?.checkboxes
+    val checkboxStates = questionnaireViewModel.foodIntake
+        .observeAsState().value?.checkboxes?: List(9) { false }
 
     Text(stringResource(R.string.foodIntake), fontWeight = FontWeight.Bold)
     Row(
@@ -180,18 +208,12 @@ fun CheckBoxQuestion(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(
-                            checked = checkboxStates?.get(index) ?: false,
+                            checked = checkboxStates.get(index) ?: false,
                             onCheckedChange = {
-                                val updatedCheckboxes = checkboxStates?.toMutableList().apply {
-                                    this?.set(index, it)
-                                }
-                                val updatedFoodIntake =
-                                    updatedCheckboxes?.let{ newCheckboxes ->
-                                        aFoodIntake.value?.copy(checkboxes = newCheckboxes)
-                                    }
-                                updatedFoodIntake?.let {
-                                    foodIntakeViewModel.updateFoodIntake(it)
-                                }
+                                questionnaireViewModel.updateCheckbox(
+                                    checkboxes = checkboxStates,
+                                    index = index
+                                )
                             }
                         )
                         Text(
@@ -210,8 +232,7 @@ fun CheckBoxQuestion(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Persona(
-    foodIntakeViewModel: FoodIntakeViewModel,
-    aFoodIntake: State<FoodIntake?>
+    questionnaireViewModel: QuestionnaireViewModel,
 ) {
     val modalStates = remember { mutableStateListOf(*Array(6) { false }) }
     var expanded by remember { mutableStateOf(false) }
@@ -219,7 +240,8 @@ fun Persona(
         "Health Devotee", "Mindful Eater", "Wellness Striver",
         "Balance Seeker", "Health Procrastinator", "Food Carefree"
     )
-    val persona = aFoodIntake.value?.persona
+    var persona = questionnaireViewModel.foodIntake
+        .observeAsState().value?.persona
 
     Text(
         text = "Your Persona",
@@ -300,11 +322,9 @@ fun Persona(
                 DropdownMenuItem(
                     text = { Text(text = option) },
                     onClick = {
-                        val updatedPersona =
-                            aFoodIntake.value?.copy(persona = option)
-                        updatedPersona?.let {
-                            foodIntakeViewModel.updateFoodIntake(it)
-                        }
+                        questionnaireViewModel.updatePersona(
+                            persona = option
+                        )
                         expanded = false
                     }
                 )
@@ -370,29 +390,28 @@ fun getPersonaInfo(index: Int): PersonaInfo = when (index) {
 
 @Composable
 fun Timings(
-    foodIntakeViewModel: FoodIntakeViewModel,
-    aFoodIntake: State<FoodIntake?>
+    questionnaireViewModel: QuestionnaireViewModel,
 ) {
     Text(
         "Timings",
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp
     )
-    InputRow(stringResource(R.string.eatTime), foodIntakeViewModel, aFoodIntake, "eat")
+    InputRow(stringResource(R.string.eatTime), questionnaireViewModel, "eat")
     Spacer(modifier = Modifier.height(8.dp))
-    InputRow(stringResource(R.string.sleepTime), foodIntakeViewModel, aFoodIntake, "sleep")
+    InputRow(stringResource(R.string.sleepTime), questionnaireViewModel,"sleep")
     Spacer(modifier = Modifier.height(8.dp))
-    InputRow(stringResource(R.string.wakeUpTime), foodIntakeViewModel, aFoodIntake, "wakeUp")
+    InputRow(stringResource(R.string.wakeUpTime), questionnaireViewModel, "wakeUp")
     Spacer(modifier = Modifier.height(8.dp))
 }
 
 @Composable
 fun InputRow(
     question: String,
-    foodIntakeViewModel: FoodIntakeViewModel,
-    aFoodIntake: State<FoodIntake?>,
+    questionnaireViewModel: QuestionnaireViewModel,
     timeType: String
 ) {
+    val aFoodIntake = questionnaireViewModel.foodIntake
     val initialTime =
         when (timeType) {
             "eat" -> aFoodIntake.value?.eatTime
@@ -406,7 +425,7 @@ fun InputRow(
     val activityTime = remember { mutableStateOf(initialTime) }
 
     val mTimePickerDialog =
-        TimePickerFun(activityTime, timeType, foodIntakeViewModel, aFoodIntake)
+        TimePickerFun(activityTime, timeType, questionnaireViewModel)
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -462,13 +481,11 @@ fun InputRow(
     }
 }
 
-
 @Composable
 fun TimePickerFun(
     mTime: MutableState<String?>,
     timeType: String,
-    foodIntakeViewModel: FoodIntakeViewModel,
-    aFoodIntake: State<FoodIntake?>
+    questionnaireViewModel: QuestionnaireViewModel,
 ): TimePickerDialog {
     val mContext = LocalContext.current
     val mCalendar = Calendar.getInstance()
@@ -483,15 +500,10 @@ fun TimePickerFun(
         mContext,
         { _, mHour: Int, mMinute: Int ->
             mTime.value = String.format("%02d:%02d", mHour, mMinute)
-            val updatedFoodIntake = when (timeType) {
-                "eat" -> aFoodIntake.value?.copy(eatTime = mTime.value?: "")
-                "sleep" -> aFoodIntake.value?.copy(sleepTime = mTime.value?: "")
-                "wakeUp" -> aFoodIntake.value?.copy(wakeUpTime = mTime.value?: "")
-                else -> null
-            }
-            updatedFoodIntake?.let {
-                foodIntakeViewModel.updateFoodIntake(it)
-            }
+            questionnaireViewModel.updateTime(
+                timeType = timeType,
+                time = mTime.value!!
+            )
         }, mHour, mMinute, false
     )
 }

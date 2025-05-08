@@ -2,29 +2,38 @@ package com.example.bryan_34309861_a3_app.data.patient
 
 import android.content.Context
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class PatientViewModel(context: Context): ViewModel() {
     val patientRepo = PatientRepository(context)
-    val allPatients: Flow<List<Patient>> = patientRepo.getAllPatients()
+    private val _allPatients = MutableLiveData<List<Patient>>()
+    val allPatients: LiveData<List<Patient>>
+        get() = _allPatients
 
-    suspend fun insertPatient(patient: Patient) =
-        patientRepo.insertPatient(patient)
+    init {
+        loadPatients()
+    }
 
-    fun updatePatient(patient: Patient) {
+    fun insertPatient(patient: Patient) {
         viewModelScope.launch {
-            patientRepo.updatePatient(patient)
+            patientRepo.insertPatient(patient)
         }
     }
 
-    fun getAllPatientsId() = patientRepo.getAllPatientsId()
+    fun loadPatients() {
+        viewModelScope.launch {
+            _allPatients.value = patientRepo.getAllPatients()
+        }
+    }
 
-    fun getPatientById(patientId: String): LiveData<Patient?> =
-        patientRepo.getPatientById(patientId)
+//    fun getPatientById(patientId: String): LiveData<Patient> =
+//        patientRepo.getPatientById(patientId)
 
     class PatientViewModelFactory(context: Context) : ViewModelProvider.Factory {
         private val context = context.applicationContext

@@ -9,7 +9,7 @@ data class Patient(
     val id: Int = 0,
     val patientId: String = "",
     var patientPassword: String = "",
-    val name: String = "",
+    var name: String = "",
     val phoneNumber: String,
     val sex: String,
     val totalScore: Float,

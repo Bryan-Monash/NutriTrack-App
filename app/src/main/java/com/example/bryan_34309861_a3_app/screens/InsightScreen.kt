@@ -1,5 +1,6 @@
 package com.example.bryan_34309861_a3_app.screens
 
+import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,51 +27,55 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
-import com.example.bryan_34309861_a3_app.data.AuthManager
-import com.example.bryan_34309861_a3_app.data.patient.PatientViewModel
+import com.example.bryan_34309861_a3_app.utils.ErrorScreen
+import com.example.bryan_34309861_a3_app.utils.LoadingScreen
+import com.example.bryan_34309861_a3_app.utils.UiState
+import com.example.bryan_34309861_a3_app.viewModels.InsightViewModel
 
 @Composable
 fun InsightScreen(
     navController: NavHostController,
-    patientViewModel: PatientViewModel
+    context: Context
 ) {
     val _context = LocalContext.current
-    val patientId = AuthManager.getPatientId()?: ""
-    val thePatient = patientViewModel.getPatientById(patientId)
+    val insightViewModel: InsightViewModel = viewModel(
+        factory = InsightViewModel.InsightViewModelFactory(context)
+    )
+
+    val uiState = insightViewModel.uiState
         .observeAsState()
 
-    if (thePatient.value == null) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Loading patient data...", fontSize = 18.sp)
+    when (val state = uiState.value) {
+        is UiState.Loading -> {
+            LoadingScreen()
         }
-        return
+        is UiState.Error -> {
+            ErrorScreen(state.errorMessage)
+        }
+        is UiState.Success -> {
+            InsightContent(
+                navController,
+                insightViewModel,
+                _context
+            )
+        }
+        else -> Unit
     }
+}
 
-    val scoreMap = thePatient.value?.let {
-        mapOf(
-            "Vegetables" to it.vegetableScore,
-            "Fruits" to it.fruitsScore,
-            "Grains & Cereal" to it.grainsScore,
-            "Whole Grains" to it.wholeGrainsScore,
-            "Meat & Alternatives" to it.meatAlternativesScore,
-            "Dairy" to it.dairyScore,
-            "Water" to it.waterScore,
-            "Saturated Fat" to it.saturatedFatScore,
-            "Unsaturated Fat" to it.unsaturatedFatScore,
-            "Sodium" to it.sodiumScore,
-            "Sugar" to it.sugarScore,
-            "Alcohol" to it.alcoholScore,
-            "Discretionary" to it.discretionaryScore
-        )
-    }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InsightContent(
+    navController: NavHostController,
+    insightViewModel: InsightViewModel,
+    _context: Context
+) {
+    val scoreMap = insightViewModel.getPatientScore()
 
-    val totalScore = thePatient.value?.totalScore
+    val totalScore = insightViewModel.getPatientTotalScore()
 
     Column(
         modifier = Modifier
@@ -81,7 +87,7 @@ fun InsightScreen(
         Text("Insights: Food Score", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn {
-            itemsIndexed(scoreMap?.toList()?: emptyList()) { _, (label, score) ->
+            itemsIndexed(scoreMap) { _, (label, score) ->
                 val cappedScore = when (label) {
                     "Grains & Cereal", "Whole Grain", "Alcohol", "Water", "Saturated Fat", "Unsaturated Fat" -> 5f
                     else -> 10f
@@ -104,6 +110,12 @@ fun InsightScreen(
                         horizontalAlignment = Alignment.Start,
                         verticalArrangement = Arrangement.Center
                     ) {
+                        val progressRatio = score / cappedScore
+                        val trackColor = when {
+                            progressRatio >= 0.8f -> Color.Green
+                            progressRatio >= 0.5f -> Color.Yellow
+                            else -> Color.Red
+                        }
                         LinearProgressIndicator(
                             progress = { score / cappedScore },
                             modifier = Modifier.padding(10.dp),
@@ -111,7 +123,9 @@ fun InsightScreen(
                                 score / cappedScore >= 0.8 -> Color.Green
                                 score / cappedScore >= 0.5 -> Color.Yellow
                                 else -> Color.Red
-                            }
+                            },
+                            gapSize = (-15).dp,
+                            drawStopIndicator = {}
                         )
                     }
                     Column(
@@ -141,7 +155,9 @@ fun InsightScreen(
         ) {
             LinearProgressIndicator(
                 progress = { (totalScore ?: 0f) / 100F },
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier.padding(10.dp),
+                gapSize = (-15).dp,
+                drawStopIndicator = {}
             )
             Text("$totalScore/100")
         }

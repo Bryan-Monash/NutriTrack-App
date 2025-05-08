@@ -1,5 +1,6 @@
 package com.example.bryan_34309861_a3_app.screens
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,27 +38,33 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
 import com.example.bryan_34309861_a3_app.R
 import com.example.bryan_34309861_a3_app.data.patient.Patient
 import com.example.bryan_34309861_a3_app.data.patient.PatientViewModel
+import com.example.bryan_34309861_a3_app.viewModels.RegisterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavHostController,
-    patientViewModel: PatientViewModel
+    context: Context
 ) {
-    val patientId = remember { mutableStateOf("") }
-    val phoneNumber = remember { mutableStateOf("") }
-    val patientName = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val confirmPassword = remember { mutableStateOf("") }
-    val allPatientId by patientViewModel.getAllPatientsId()
-        .collectAsState(initial = emptyList())
+    val registerViewModel: RegisterViewModel = viewModel(
+        factory = RegisterViewModel.RegisterViewModelFactory(context)
+    )
+    var patientId by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
+    var patientName by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
-    val thePatient: State<Patient?> = patientViewModel.getPatientById(patientId.value)
+    val allPatients by registerViewModel.allPatients
+        .observeAsState(initial = emptyList())
+
+    val thePatient = registerViewModel.getPatientById(patientId)
         .observeAsState()
 
     val _context = LocalContext.current
@@ -94,7 +101,7 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth(0.85f)
         ) {
             OutlinedTextField(
-                value = patientId.value,
+                value = patientId,
                 onValueChange = {  },
                 label = { Text(stringResource(R.string.patientIdLabel), fontSize = 14.sp) },
                 modifier = Modifier
@@ -112,11 +119,11 @@ fun RegisterScreen(
                     expanded = false
                 },
             ) {
-                allPatientId.forEach { patient ->
+                allPatients.forEach { patient ->
                     DropdownMenuItem(
-                        text = { Text(patient) },
+                        text = { Text(patient.patientId) },
                         onClick = {
-                            patientId.value = patient
+                            patientId = patient.patientId
                             expanded = !expanded
                         }
                     )
@@ -126,30 +133,30 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = patientName.value,
-            onValueChange = { patientName.value = it },
+            value = patientName,
+            onValueChange = { patientName = it },
             label = { Text("Enter Name", fontSize = 14.sp) },
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = phoneNumber.value,
-            onValueChange = { phoneNumber.value = it },
+            value = phoneNumber,
+            onValueChange = { phoneNumber = it },
             label = { Text("Phone Number", fontSize = 14.sp) },
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = password.value,
-            onValueChange = { password.value = it },
+            value = password,
+            onValueChange = { password = it },
             label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
             visualTransformation = PasswordVisualTransformation(),
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = confirmPassword.value,
-            onValueChange = { confirmPassword.value = it },
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
             label = { Text("Confirm Password", fontSize = 14.sp) },
             visualTransformation = PasswordVisualTransformation(),
         )
@@ -170,21 +177,14 @@ fun RegisterScreen(
                     thePatient.value?.patientPassword != "" -> {
                         Toast.makeText(_context, "Patient is already registered", Toast.LENGTH_SHORT).show()
                     }
-                    thePatient.value?.phoneNumber != phoneNumber.value -> {
+                    thePatient.value?.phoneNumber != phoneNumber -> {
                         Toast.makeText(_context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
                     }
-                    password.value != confirmPassword.value -> {
+                    password != confirmPassword -> {
                         Toast.makeText(_context, "Password does not match", Toast.LENGTH_SHORT).show()
                     }
                     else -> {
-                        val updatedPatient = thePatient.value?.copy(
-                            patientPassword = password.value,
-                            phoneNumber = phoneNumber.value,
-                            name = patientName.value
-                        )
-                        updatedPatient?.let {
-                            patientViewModel.updatePatient(it)
-                        }
+                        registerViewModel.updatePatientDetails(thePatient.value!!, patientName, password)
                         navController.navigate(PatientsDashboardScreen.Login.route)
                     }
                 }

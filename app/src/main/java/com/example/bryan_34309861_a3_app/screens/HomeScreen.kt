@@ -1,5 +1,6 @@
 package com.example.bryan_34309861_a3_app.screens
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,25 +40,55 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.PatientsDashboardScreen
 import com.example.bryan_34309861_a3_app.R
 import com.example.bryan_34309861_a3_app.data.AuthManager
 import com.example.bryan_34309861_a3_app.data.patient.PatientViewModel
+import com.example.bryan_34309861_a3_app.utils.ErrorScreen
+import com.example.bryan_34309861_a3_app.utils.LoadingScreen
+import com.example.bryan_34309861_a3_app.utils.UiState
+import com.example.bryan_34309861_a3_app.viewModels.HomeViewModel
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    patientViewModel: PatientViewModel
+    context: Context
 ) {
-    val currentPatientId = AuthManager.getPatientId() ?: ""
-    val thePatient = patientViewModel.getPatientById(currentPatientId)
+    val homeViewModel: HomeViewModel = viewModel(
+        factory = HomeViewModel.HomeViewModelFactory(context)
+    )
+
+    val uiState = homeViewModel.uiState
         .observeAsState()
+
+    when (val state = uiState.value) {
+        is UiState.Loading -> {
+            LoadingScreen()
+        }
+        is UiState.Error -> {
+            ErrorScreen(state.errorMessage)
+        }
+        is UiState.Success -> {
+            HomeScreenContent(navController, homeViewModel)
+        }
+        else -> Unit
+    }
+}
+
+@Composable
+fun HomeScreenContent(
+    navController: NavHostController,
+    homeViewModel: HomeViewModel
+) {
+    val totalScore = homeViewModel.getPatientTotalScore()
 
     Column(
         modifier = Modifier
@@ -73,7 +104,7 @@ fun HomeScreen(
         ) {
             Spacer(modifier = Modifier.height(32.dp))
             Text(
-                text = "Hello, ${thePatient.value?.name ?: "User"}",
+                text = "Hello, ${homeViewModel.getPatientName()}",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -153,7 +184,6 @@ fun HomeScreen(
             }
 
             Spacer(modifier = Modifier.height(6.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -168,7 +198,6 @@ fun HomeScreen(
                     fontSize = 16.sp,
                     modifier = Modifier.weight(1f)
                 )
-                val totalScore = thePatient.value?.totalScore
                 Text(
                     text = "$totalScore / 100",
                     fontWeight = FontWeight.Bold

@@ -8,7 +8,7 @@ data class FoodIntake(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val patientId: String,
-    val checkboxes: List<Boolean> = List(9) { false },
+    var checkboxes: List<Boolean> = List(9) { false },
 //    val checkbox1: Boolean = false,
 //    val checkbox2: Boolean = false,
 //    val checkbox3: Boolean = false,
@@ -18,8 +18,8 @@ data class FoodIntake(
 //    val checkbox7: Boolean = false,
 //    val checkbox8: Boolean = false,
 //    val checkbox9: Boolean = false,
-    val persona: String = "",
-    val sleepTime: String = "",
-    val eatTime: String = "",
-    val wakeUpTime: String = ""
+    var persona: String = "",
+    var sleepTime: String = "",
+    var eatTime: String = "",
+    var wakeUpTime: String = ""
 )

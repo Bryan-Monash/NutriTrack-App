@@ -7,23 +7,31 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntake
 import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntakeDao
+import com.example.bryan_34309861_a3_app.data.nutriCoachTip.NutriCoachTip
+import com.example.bryan_34309861_a3_app.data.nutriCoachTip.NutriCoachTipDao
 import com.example.bryan_34309861_a3_app.data.patient.Patient
 import com.example.bryan_34309861_a3_app.data.patient.PatientDao
 import com.example.bryan_34309861_a3_app.utils.Converters
 
-@Database(entities = [Patient::class, FoodIntake::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Patient::class, FoodIntake::class, NutriCoachTip::class],
+    version = 1,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
-abstract class HospitalDatabase: RoomDatabase() {
+abstract class AppDatabase: RoomDatabase() {
     abstract fun patientDao(): PatientDao
     abstract fun foodIntakeDao(): FoodIntakeDao
+    abstract fun nutriCoachDao(): NutriCoachTipDao
 
     companion object {
         @Volatile
-        private var Instance: HospitalDatabase? = null
+        private var Instance: AppDatabase? = null
 
-        fun getDatabase(context: Context): HospitalDatabase {
+        fun getDatabase(context: Context): AppDatabase {
             return Instance?: synchronized(this) {
-                Room.databaseBuilder(context, HospitalDatabase::class.java, "patient_database")
+                Room.databaseBuilder(context, AppDatabase::class.java, "patient_database")
+                    .fallbackToDestructiveMigration()
                     .build().also { Instance = it }
             }
         }
