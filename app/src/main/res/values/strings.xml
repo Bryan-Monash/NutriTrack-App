@@ -25,4 +25,5 @@
     <string name="food_quality_score_desc">Your Food Quality Score provides a snapshot of how well your eating patterns align with established food guidelines, helping you identify both strengths and opportunities for improvement in your diet.\n\nThis personalized measurement considers various food groups including vegetables, fruits, whole grains, and proteins to give you practical insights for making healthier food choices.</string>
     <string name="title_activity_clinician_dashboard">ClinicianDashboard</string>
     <string name="clinicianLogin">Clinician Login</string>
+    <string name="clinicianKey">Clinician Key</string>
 </resources>

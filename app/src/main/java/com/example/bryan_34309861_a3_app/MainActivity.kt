@@ -2,7 +2,6 @@ package com.example.bryan_34309861_a3_app
 
 import android.content.ContentValues.TAG
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -24,36 +23,38 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntake
-import com.example.bryan_34309861_a3_app.data.foodIntake.FoodIntakeViewModel
-import com.example.bryan_34309861_a3_app.data.patient.Patient
-import com.example.bryan_34309861_a3_app.data.patient.PatientViewModel
-import com.example.bryan_34309861_a3_app.screens.ClinicianLoginScreen
-import com.example.bryan_34309861_a3_app.screens.HomeScreen
-import com.example.bryan_34309861_a3_app.screens.InsightScreen
-import com.example.bryan_34309861_a3_app.screens.MyBottomAppBar
-import com.example.bryan_34309861_a3_app.screens.MyTopAppBar
-import com.example.bryan_34309861_a3_app.screens.NutriCoachScreen
-import com.example.bryan_34309861_a3_app.screens.PatientLoginScreen
-import com.example.bryan_34309861_a3_app.screens.QuestionnaireScreen
-import com.example.bryan_34309861_a3_app.screens.RegisterScreen
-import com.example.bryan_34309861_a3_app.screens.SettingsScreen
-import com.example.bryan_34309861_a3_app.screens.WelcomeScreen
+import com.example.bryan_34309861_a3_app.data.util.AuthManager
+import com.example.bryan_34309861_a3_app.data.database.FoodIntake
+import com.example.bryan_34309861_a3_app.data.viewModel.FoodIntakeViewModel
+import com.example.bryan_34309861_a3_app.data.database.Patient
+import com.example.bryan_34309861_a3_app.data.viewModel.PatientViewModel
+import com.example.bryan_34309861_a3_app.ui.composables.MyBottomAppBar
+import com.example.bryan_34309861_a3_app.ui.composables.MyTopAppBar
+import com.example.bryan_34309861_a3_app.ui.screens.ClinicianDashboardScreen.ClinicianDashboardScreen
+import com.example.bryan_34309861_a3_app.ui.screens.ClinicianLoginScreen.ClinicianLoginScreen
+import com.example.bryan_34309861_a3_app.ui.screens.HomeScreen.HomeScreen
+import com.example.bryan_34309861_a3_app.ui.screens.InsightScreen.InsightScreen
+import com.example.bryan_34309861_a3_app.ui.screens.NutriCoachScreen.NutriCoachScreen
+import com.example.bryan_34309861_a3_app.ui.screens.PatientLoginScreen.PatientLoginScreen
+import com.example.bryan_34309861_a3_app.ui.screens.QuestionnaireScreen.QuestionnaireScreen
+import com.example.bryan_34309861_a3_app.ui.screens.RegisterScreen.RegisterScreen
+import com.example.bryan_34309861_a3_app.ui.screens.SettingsScreen.SettingsScreen
+import com.example.bryan_34309861_a3_app.ui.screens.WelcomeScreen.WelcomeScreen
 import com.example.bryan_34309861_a3_app.ui.theme.Bryan_34309861_A3_appTheme
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-sealed class PatientsDashboardScreen(val route: String) {
-    object Welcome : PatientsDashboardScreen("Welcome")
-    object PatientLogin : PatientsDashboardScreen("Patient Login")
-    object Register : PatientsDashboardScreen("Register")
-    object Questionnaire : PatientsDashboardScreen("Questionnaire")
-    object Home : PatientsDashboardScreen("Home")
-    object Insight : PatientsDashboardScreen("Insight")
-    object NutriCoach: PatientsDashboardScreen("NutriCoach")
-    object Settings: PatientsDashboardScreen("Settings")
-    object ClinicianLogin: PatientsDashboardScreen("Clinician Login")
-    object ClinicianDashboard: PatientsDashboardScreen("Clinician Dashboard")
+sealed class AppDashboardScreen(val route: String) {
+    object Welcome : AppDashboardScreen("Welcome")
+    object PatientLogin : AppDashboardScreen("Patient Login")
+    object Register : AppDashboardScreen("Register")
+    object Questionnaire : AppDashboardScreen("Questionnaire")
+    object Home : AppDashboardScreen("Home")
+    object Insight : AppDashboardScreen("Insight")
+    object NutriCoach: AppDashboardScreen("NutriCoach")
+    object Settings: AppDashboardScreen("Settings")
+    object ClinicianLogin: AppDashboardScreen("Clinician Login")
+    object ClinicianDashboard: AppDashboardScreen("Clinician Dashboard")
 }
 
 class MainActivity : ComponentActivity() {
@@ -71,6 +72,7 @@ class MainActivity : ComponentActivity() {
             )[FoodIntakeViewModel::class.java]
 
             readCSV(context, "data.csv", patientViewModel, foodIntakeViewModel)
+            AuthManager.initializeUserId(context)
 
             val navController = rememberNavController()
             val currentRoute by navController.currentBackStackEntryAsState()
@@ -80,22 +82,24 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
                         if (currentRoute?.destination?.route in listOf(
-                                PatientsDashboardScreen.Home.route,
-                                PatientsDashboardScreen.Insight.route,
-                                PatientsDashboardScreen.NutriCoach.route,
-                                PatientsDashboardScreen.Settings.route
+                                AppDashboardScreen.Home.route,
+                                AppDashboardScreen.Insight.route,
+                                AppDashboardScreen.NutriCoach.route,
+                                AppDashboardScreen.Settings.route,
+                                AppDashboardScreen.ClinicianLogin.route,
+                                AppDashboardScreen.ClinicianDashboard.route
                             )) {
                             MyBottomAppBar(navController)
                         }
                     },
                     topBar = {
                         if (currentRoute?.destination?.route
-                            == PatientsDashboardScreen.Questionnaire.route) {
+                            == AppDashboardScreen.Questionnaire.route) {
                             MyTopAppBar(navController)
                         }
                     }
                 ) { innerPadding ->
-                    PatientDashboardContent(
+                    AppDashboardContent(
                         modifier = Modifier.padding(innerPadding),
                         navController = navController,
                         context = context
@@ -107,7 +111,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun PatientDashboardContent(
+fun AppDashboardContent(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     context: Context
@@ -117,50 +121,55 @@ fun PatientDashboardContent(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        NavHostPatient(navController, context)
+        NavHostApp(navController, context)
     }
 }
 
 @Composable
-fun NavHostPatient(
+fun NavHostApp(
     navController: NavHostController,
     context: Context,
     modifier: Modifier = Modifier
 ) {
+    val sharedPref = context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
+
+    val lastSession = sharedPref.getString("currentSession", null)
+
     NavHost(
         navController = navController,
-        startDestination = PatientsDashboardScreen.Welcome.route,
+        startDestination = if (lastSession == null) AppDashboardScreen.Welcome.route
+                            else AppDashboardScreen.Home.route,
         modifier = modifier
     ) {
-        composable(PatientsDashboardScreen.Welcome.route) {
+        composable(AppDashboardScreen.Welcome.route) {
             WelcomeScreen(navController)
         }
-        composable(PatientsDashboardScreen.PatientLogin.route) {
+        composable(AppDashboardScreen.PatientLogin.route) {
             PatientLoginScreen(navController, context)
         }
-        composable(PatientsDashboardScreen.Register.route) {
+        composable(AppDashboardScreen.Register.route) {
             RegisterScreen(navController, context)
         }
-        composable(PatientsDashboardScreen.Questionnaire.route) {
+        composable(AppDashboardScreen.Questionnaire.route) {
             QuestionnaireScreen(navController, context)
         }
-        composable(PatientsDashboardScreen.Home.route) {
+        composable(AppDashboardScreen.Home.route) {
             HomeScreen(navController, context)
         }
-        composable(PatientsDashboardScreen.Insight.route) {
+        composable(AppDashboardScreen.Insight.route) {
             InsightScreen(navController, context)
         }
-        composable(PatientsDashboardScreen.NutriCoach.route) {
+        composable(AppDashboardScreen.NutriCoach.route) {
             NutriCoachScreen(navController, context)
         }
-        composable(PatientsDashboardScreen.Settings.route) {
+        composable(AppDashboardScreen.Settings.route) {
             SettingsScreen(navController, context)
         }
-        composable(PatientsDashboardScreen.ClinicianLogin.route) {
+        composable(AppDashboardScreen.ClinicianLogin.route) {
             ClinicianLoginScreen(navController, context)
         }
-        composable(PatientsDashboardScreen.ClinicianDashboard.route) {
-
+        composable(AppDashboardScreen.ClinicianDashboard.route) {
+            ClinicianDashboardScreen(navController, context)
         }
     }
 }
@@ -171,8 +180,7 @@ fun readCSV(
     patientViewModel: PatientViewModel,
     foodIntakeViewModel: FoodIntakeViewModel,
 ) {
-    val sharedPref = context.getSharedPreferences("csvInData", Context.MODE_PRIVATE)
-    Log.d("SHARED PREF", "$sharedPref")
+    val sharedPref = context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
     val isRead = sharedPref.getBoolean("isRead", false)
     if (!isRead) {
         val assets = context.assets
