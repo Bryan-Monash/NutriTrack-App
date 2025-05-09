@@ -15,21 +15,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.bryan_34309861_a3_app.AppDashboardScreen
 
 @Composable
 fun MyBottomAppBar(
     navController: NavHostController
 ) {
-    var selectedItem by remember { mutableStateOf(0) }
     val items = listOf(
         AppDashboardScreen.Home.route,
         AppDashboardScreen.Insight.route,
         AppDashboardScreen.NutriCoach.route,
         AppDashboardScreen.Settings.route
     )
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination
     NavigationBar {
-        items.forEachIndexed {index, item ->
+        items.forEach { item ->
+            val isSelected = currentDestination?.route == item
             NavigationBarItem(
                 icon = {
                     when (item) {
@@ -58,7 +60,7 @@ fun MyBottomAppBar(
                 onClick = {
                     navController.navigate(item)
                 },
-                selected = selectedItem == index
+                selected = isSelected
             )
         }
     }

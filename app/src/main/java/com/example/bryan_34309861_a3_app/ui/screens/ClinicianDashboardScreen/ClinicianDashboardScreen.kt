@@ -83,7 +83,8 @@ fun ClinicianDashboardScreen(
         Column(
             modifier = Modifier
                 .weight(0.8f)
-                .padding(8.dp)
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             DataAnalysisSection(context, dashboardViewModel)
 
