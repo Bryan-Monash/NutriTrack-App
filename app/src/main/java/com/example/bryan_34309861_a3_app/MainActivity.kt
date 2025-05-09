@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +46,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 
 sealed class AppDashboardScreen(val route: String) {
+    object Launch : AppDashboardScreen("Launch")
     object Welcome : AppDashboardScreen("Welcome")
     object PatientLogin : AppDashboardScreen("Patient Login")
     object Register : AppDashboardScreen("Register")
@@ -131,16 +133,14 @@ fun NavHostApp(
     context: Context,
     modifier: Modifier = Modifier
 ) {
-    val sharedPref = context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
-
-    val lastSession = sharedPref.getString("currentSession", null)
-
     NavHost(
         navController = navController,
-        startDestination = if (lastSession == null) AppDashboardScreen.Welcome.route
-                            else AppDashboardScreen.Home.route,
+        startDestination = AppDashboardScreen.Launch.route,
         modifier = modifier
     ) {
+        composable(AppDashboardScreen.Launch.route) {
+            InitialLaunchScreen(navController, context)
+        }
         composable(AppDashboardScreen.Welcome.route) {
             WelcomeScreen(navController)
         }
@@ -170,6 +170,24 @@ fun NavHostApp(
         }
         composable(AppDashboardScreen.ClinicianDashboard.route) {
             ClinicianDashboardScreen(navController, context)
+        }
+    }
+}
+
+@Composable
+fun InitialLaunchScreen(navController: NavHostController, context: Context) {
+    val currentSession = context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
+        .getString("currentSession", null)
+
+    LaunchedEffect(Unit) {
+        if (currentSession == null) {
+            navController.navigate(AppDashboardScreen.Welcome.route) {
+                popUpTo(AppDashboardScreen.Launch.route) { inclusive = true }
+            }
+        } else {
+            navController.navigate(AppDashboardScreen.Home.route) {
+                popUpTo(AppDashboardScreen.Launch.route) { inclusive = true }
+            }
         }
     }
 }
