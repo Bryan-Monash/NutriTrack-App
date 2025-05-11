@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,6 +66,8 @@ fun RegisterScreen(
 
     val _context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -144,7 +149,19 @@ fun RegisterScreen(
             value = password,
             onValueChange = { password = it },
             label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None
+                    else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (passwordVisible) Icons.Default.Visibility
+                            else Icons.Default.VisibilityOff
+                val description = if (passwordVisible) "Hide password"
+                                    else "Show password"
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible }
+                ) {
+                    Icon(imageVector = image, contentDescription = description)
+                }
+            }
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
@@ -152,7 +169,19 @@ fun RegisterScreen(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = { Text("Confirm Password", fontSize = 14.sp) },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None
+                                    else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (confirmPasswordVisible) Icons.Default.Visibility
+                else Icons.Default.VisibilityOff
+                val description = if (confirmPasswordVisible) "Hide password"
+                else "Show password"
+                IconButton(
+                    onClick = { confirmPasswordVisible = !confirmPasswordVisible }
+                ) {
+                    Icon(imageVector = image, contentDescription = description)
+                }
+            }
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(

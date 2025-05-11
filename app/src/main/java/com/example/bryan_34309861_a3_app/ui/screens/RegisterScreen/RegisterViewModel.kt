@@ -12,6 +12,7 @@ import com.example.bryan_34309861_a3_app.AppDashboardScreen
 import com.example.bryan_34309861_a3_app.data.database.Patient
 import com.example.bryan_34309861_a3_app.data.repository.PatientRepository
 import kotlinx.coroutines.launch
+import at.favre.lib.crypto.bcrypt.BCrypt
 
 class RegisterViewModel(context: Context): ViewModel() {
     private val repository = PatientRepository(context)
@@ -70,7 +71,9 @@ class RegisterViewModel(context: Context): ViewModel() {
                 Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
             }
             else -> {
-                updatePatientDetails(patientName, password)
+                val hashedPassword = BCrypt.withDefaults()
+                    .hashToString(12, password.toCharArray())
+                updatePatientDetails(patientName, hashedPassword)
                 navController.navigate(AppDashboardScreen.PatientLogin.route)
             }
         }

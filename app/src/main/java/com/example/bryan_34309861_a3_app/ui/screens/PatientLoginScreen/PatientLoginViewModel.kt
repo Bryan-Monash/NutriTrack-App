@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.bryan_34309861_a3_app.AppDashboardScreen
 import com.example.bryan_34309861_a3_app.data.util.AuthManager
 import com.example.bryan_34309861_a3_app.data.database.Patient
@@ -53,19 +54,27 @@ class PatientLoginViewModel(context: Context): ViewModel() {
         if (patientId == "") {
             return { Toast.makeText(context, "No Patient ID selected", Toast.LENGTH_SHORT).show() }
         }
-        if (thePatient == null) return {
+        if (thePatient.value == null) return {
             Toast.makeText(context,"Patient not in database", Toast.LENGTH_SHORT).show()
         }
-        else if (thePatient.value?.patientPassword == "") return {
+
+        val hashedPassword = thePatient.value?.patientPassword
+        if (hashedPassword.isNullOrEmpty()) return {
             Toast.makeText(context, "Patient does not have a password", Toast.LENGTH_SHORT).show()
         }
-        else if (thePatient.value?.patientPassword != password) return {
-            Toast.makeText(context, "Password is incorrect", Toast.LENGTH_SHORT).show()
-        }
-        else return {
-            Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-            AuthManager.login(patientId, context)
-            navController.navigate(AppDashboardScreen.Questionnaire.route)
+
+        val isPasswordCorrect = BCrypt.verifyer()
+            .verify(password.toCharArray(), hashedPassword).verified
+        return if (!isPasswordCorrect) {
+            {
+                Toast.makeText(context, "Password is incorrect", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            {
+                Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                AuthManager.login(patientId, context)
+                navController.navigate(AppDashboardScreen.Questionnaire.route)
+            }
         }
     }
 
