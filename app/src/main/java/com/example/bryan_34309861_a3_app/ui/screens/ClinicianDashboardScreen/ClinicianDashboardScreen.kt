@@ -102,7 +102,7 @@ fun HEIFARow(label: String, value: Float) {
                 color = Color.Gray,
                 shape = RoundedCornerShape(8.dp)
             )
-            .background(Color.White, shape = RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
             .padding(12.dp)
     ) {
         Row(
@@ -112,9 +112,13 @@ fun HEIFARow(label: String, value: Float) {
             Text(
                 text = "$label :",
                 fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
-            Text(text = "%.2f".format(value))
+            Text(
+                text = "%.2f".format(value),
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
@@ -189,7 +193,7 @@ fun DataAnalysisContent(
                     .padding(vertical = 16.dp),
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             ) {
                 Column(
                     modifier = Modifier
@@ -204,7 +208,8 @@ fun DataAnalysisContent(
                         },
                         fontSize = 12.sp,
                         lineHeight = 20.sp,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

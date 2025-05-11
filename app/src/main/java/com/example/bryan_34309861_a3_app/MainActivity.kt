@@ -15,6 +15,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -78,8 +82,9 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
             val currentRoute by navController.currentBackStackEntryAsState()
+            var darkModeEnabled by rememberSaveable { mutableStateOf(false) }
 
-            Bryan_34309861_A3_appTheme {
+            Bryan_34309861_A3_appTheme(darkTheme = darkModeEnabled) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
@@ -104,7 +109,9 @@ class MainActivity : ComponentActivity() {
                     AppDashboardContent(
                         modifier = Modifier.padding(innerPadding),
                         navController = navController,
-                        context = context
+                        context = context,
+                        darkModeEnabled = darkModeEnabled,
+                        onToggleDarkMode =  { darkModeEnabled = it }
                     )
                 }
             }
@@ -116,14 +123,16 @@ class MainActivity : ComponentActivity() {
 fun AppDashboardContent(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    context: Context
+    context: Context,
+    darkModeEnabled: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        NavHostApp(navController, context)
+        NavHostApp(navController, context, onToggleDarkMode, darkModeEnabled)
     }
 }
 
@@ -131,7 +140,9 @@ fun AppDashboardContent(
 fun NavHostApp(
     navController: NavHostController,
     context: Context,
-    modifier: Modifier = Modifier
+    onToggleDarkMode: (Boolean) -> Unit,
+    darkModeEnabled: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,
@@ -163,7 +174,7 @@ fun NavHostApp(
             NutriCoachScreen(navController, context)
         }
         composable(AppDashboardScreen.Settings.route) {
-            SettingsScreen(navController, context)
+            SettingsScreen(navController, context, onToggleDarkMode = onToggleDarkMode,darkModeEnabled)
         }
         composable(AppDashboardScreen.ClinicianLogin.route) {
             ClinicianLoginScreen(navController, context)

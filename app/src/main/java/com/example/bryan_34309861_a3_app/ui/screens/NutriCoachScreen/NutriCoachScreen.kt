@@ -4,6 +4,7 @@ import coil3.compose.rememberAsyncImagePainter
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -106,6 +109,7 @@ fun NutriCoachScreenContent(
         Text(
             text = "NutriCoach",
             style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             fontWeight = FontWeight.Bold
         )
@@ -144,22 +148,27 @@ fun FruitDetailsSection(
         Text(
             text = "Fruit Name:",
             fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.width(6.dp))
         Box(
             modifier = Modifier
                 .weight(1f)
                 .height(40.dp)
-                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
                 .padding(horizontal = 8.dp, vertical = 10.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             BasicTextField(
                 value = fruitName,
                 onValueChange = { fruitName = it },
-                textStyle = TextStyle(fontSize = 12.sp),
-                singleLine = true
+                textStyle = TextStyle(
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                singleLine = true,
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface)
             )
         }
         Spacer(modifier = Modifier.width(6.dp))
@@ -167,7 +176,11 @@ fun FruitDetailsSection(
             onClick = {
                 fruitApiViewModel.getFruitDetailByName(fruitName)
             },
-            enabled = fruitName.isNotEmpty()
+            enabled = fruitName.isNotEmpty(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         ) {
             Icon(
                 Icons.Default.Search,
@@ -231,7 +244,7 @@ fun FruitDetailsTableContent(
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             details.forEach { (label, value) ->
@@ -246,17 +259,20 @@ fun FruitDetailsTableContent(
                             imageVector = Icons.Default.Info,
                             contentDescription = "$label icon",
                             tint = Color(0xFF6C63FF),
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "$label:",
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Text(
                         text = value,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -334,10 +350,10 @@ fun GenAIResponseContent(
 
     nutriCoachTipViewModel.insertTip(
         NutriCoachTip(
-        patientId = nutriCoachTipViewModel.thePatient.value?.patientId?: "",
-        tip = response,
-        timeAdded = formattedTime,
-    )
+            patientId = nutriCoachTipViewModel.thePatient.value?.patientId?: "",
+            tip = response,
+            timeAdded = formattedTime,
+        )
     )
     val scrollState = rememberScrollState()
     Card(
@@ -346,7 +362,7 @@ fun GenAIResponseContent(
             .padding(vertical = 16.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(
@@ -378,7 +394,7 @@ fun ShowTips(
             ShowTipsContent(nutriCoachTipViewModel, showModal)
         }
         is UiState.Error -> {
-            Error(state.errorMessage)
+            ErrorContent(state.errorMessage)
         }
         else -> Unit
     }
@@ -428,7 +444,7 @@ fun ShowTipsContent(
                                     .padding(vertical = 16.dp),
                                 shape = RoundedCornerShape(16.dp),
                                 elevation = CardDefaults.cardElevation(4.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9))
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                             ) {
                                 Column(modifier = Modifier.padding(10.dp)) {
                                     Text(
