@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.SupervisorAccount
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -69,7 +71,7 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
         SettingRow(icon = Icons.Default.Phone, thePatient.value?.phoneNumber?: "")
         Spacer(modifier = Modifier.height(16.dp))
-        SettingRow(Icons.Default.Create, thePatient.value?.patientId?: "")
+        SettingRow(Icons.Default.Badge, thePatient.value?.patientId?: "")
         Spacer(modifier = Modifier.height(16.dp))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(16.dp))
@@ -88,7 +90,7 @@ fun SettingsScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         SettingRow(
-            icon = Icons.Default.Person,
+            icon = Icons.Default.SupervisorAccount,
             text = "Clinician Login",
             trailingIcon = Icons.Default.ArrowForward,
             onClick = settingsViewModel.clinicianLogin(navController)

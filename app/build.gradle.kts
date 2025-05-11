@@ -43,6 +43,9 @@ android {
 }
 
 dependencies {
+    // icon
+    implementation ("androidx.compose.material:material-icons-extended")
+
     // hashing
     implementation("at.favre.lib:bcrypt:0.9.0")
 

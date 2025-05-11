@@ -1,9 +1,11 @@
 package com.example.bryan_34309861_a3_app.ui.composables
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -41,12 +43,12 @@ fun MyBottomAppBar(
                         )
 
                         AppDashboardScreen.Insight.route -> Icon(
-                            Icons.Filled.Info,
+                            Icons.Filled.Insights,
                             contentDescription = "Insights"
                         )
 
                         AppDashboardScreen.NutriCoach.route -> Icon(
-                            Icons.Filled.Face,
+                            Icons.Filled.Analytics,
                             contentDescription = "NutriCoach"
                         )
 
