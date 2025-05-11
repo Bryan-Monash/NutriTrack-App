@@ -43,11 +43,16 @@ android {
 }
 
 dependencies {
+    // hashing
+    implementation("at.favre.lib:bcrypt:0.9.0")
+
+    // nav
     implementation("androidx.navigation:navigation-compose:2.8.9")
 
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
 
+    // room db
     implementation(libs.androidx.room.runtime.android)
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
@@ -58,6 +63,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("androidx.compose.runtime:runtime-livedata:1.8.0")
 
+    // retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
