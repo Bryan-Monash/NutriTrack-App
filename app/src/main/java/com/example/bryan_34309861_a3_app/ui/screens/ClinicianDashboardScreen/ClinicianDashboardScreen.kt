@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.bryan_34309861_a3_app.AppDashboardScreen
 import com.example.bryan_34309861_a3_app.data.viewModel.GenAIViewModel
 import com.example.bryan_34309861_a3_app.data.util.UiState
 import com.example.bryan_34309861_a3_app.ui.composables.ErrorContent
@@ -82,12 +83,23 @@ fun ClinicianDashboardScreen(
         HorizontalDivider()
         Column(
             modifier = Modifier
-                .weight(0.8f)
+                .weight(0.75f)
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             DataAnalysisSection(context, dashboardViewModel)
-
+        }
+        Button(
+            onClick = {
+                navController.navigate(AppDashboardScreen.Settings.route) {
+                    popUpTo(AppDashboardScreen.ClinicianDashboard.route) { inclusive = true }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth(0.5f)
+                .padding(top = 16.dp)
+        ) {
+            Text("Done")
         }
     }
 }
