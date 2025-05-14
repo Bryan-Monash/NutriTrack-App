@@ -1,7 +1,6 @@
 package com.example.bryan_34309861_a3_app.data.viewModel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -16,48 +15,98 @@ import com.example.bryan_34309861_a3_app.data.util.UiState
 import kotlinx.coroutines.launch
 
 class FruitApiViewModel(context: Context): ViewModel() {
+    /**
+     * Repositories instance for handling all data operations.
+     * This is the single point of contact for the ViewModels to interact with data sources.
+     */
     private val fruitApiRepository = FruitApiRepository(context)
     private val patientRepository = PatientRepository(context)
+
+    /**
+     * Patient's ID in the current session
+     */
     private val patientId = AuthManager.getPatientId()?: ""
 
+    /**
+     * Private mutable live data that stores the patient
+     * Using LiveData provides a way to observe changes to the data in real time
+     */
     private val _thePatient = MutableLiveData<Patient>()
-    val thePatient: LiveData<Patient>
-        get() = _thePatient
 
+    /**
+     * Private mutable live data that determines the state of UI for getting the patient
+     */
     private val _patientUiState =  MutableLiveData<UiState>(UiState.Initial)
+
+    /**
+     * Public immutable LiveData that exposes the current UI state for fetching the patient
+     */
     val patientUiState: LiveData<UiState>
         get() = _patientUiState
 
+    /**
+     * Private mutable live data that stores the fruit from the API
+     * Using LiveData provides a way to observe changes to the data in real time
+     */
     private val _apiFruit = MutableLiveData<Fruit>()
-    val apiFruit: LiveData<Fruit>
-        get() = _apiFruit
 
+    /**
+     * Private mutable live data that determines the state of UI for getting the fruit from API
+     */
     private val _uiState = MutableLiveData<UiState>(UiState.Initial)
+
+    /**
+     * Public immutable LiveData that exposes the current UI state for fetching the fruit from API
+     */
     val uiState: LiveData<UiState>
         get() = _uiState
 
+    /**
+     * Initialize the ViewModel by loading the current patient in session from the repository
+     * This ensures data is available as soon as the UI starts observing.
+     */
     init {
         loadPatient()
     }
 
-    fun loadPatient() {
+    /**
+     * Loads the current patient by fetching the latest data from the repository
+     *
+     * This method is responsible for loading the observed LiveData with the
+     * most current data.
+     */
+    private fun loadPatient() {
         viewModelScope.launch {
+            // Loading when run
             _patientUiState.value = UiState.Loading
             val patient = patientRepository.getPatientById(patientId)
             _thePatient.value = patient
+            // Patient is found
             _patientUiState.value = UiState.Success("Fetch successfully")
         }
     }
 
+    /**
+     * Checks whether the current patient's fruit score is optimal
+     *
+     * @return true is the fruit score is greater than 5
+     */
     fun isFruitScoreOptimal() : Boolean {
         return ((_thePatient.value?.fruitsScore ?: 0f) > 5f)
     }
 
+    /**
+     * Retrieves the api fruit's detail by the name given
+     *
+     * @param fruitName The name of fruit wanted to be retrieved
+     */
     fun getFruitDetailByName(fruitName: String) {
         viewModelScope.launch {
+            // Loading while running
             _uiState.value = UiState.Loading
             try {
                 val fruit = fruitApiRepository.getFruitDetailsByName(fruitName)
+                // If the fruit exists
                 if (fruit.name != "") {
                     _apiFruit.value = fruit
                     _uiState.value = UiState.Success("Fruit found")
@@ -70,20 +119,26 @@ class FruitApiViewModel(context: Context): ViewModel() {
         }
     }
 
+    /**
+     * Retrieve a the fruit details in a pair form
+     *
+     * @return A list of pairs containing the label and the content
+     */
     fun getFruitDetailsMap(): List<Pair<String, String>> {
         return listOf(
-            "Name" to (apiFruit.value?.name?: ""),
-            "Family" to (apiFruit.value?.family?: ""),
-            "Genus" to (apiFruit.value?.genus?: ""),
-            "Order" to (apiFruit.value?.order?: ""),
-            "Calories" to "${apiFruit.value?.nutritions?.calories}",
-            "Sugar" to "${apiFruit.value?.nutritions?.sugar}",
-            "Carbohydrates" to "${apiFruit.value?.nutritions?.carbohydrates}",
-            "Protein" to "${apiFruit.value?.nutritions?.protein}",
-            "Fat" to "${apiFruit.value?.nutritions?.fat}"
+            "Name" to (_apiFruit.value?.name?: ""),
+            "Family" to (_apiFruit.value?.family?: ""),
+            "Genus" to (_apiFruit.value?.genus?: ""),
+            "Order" to (_apiFruit.value?.order?: ""),
+            "Calories" to "${_apiFruit.value?.nutritions?.calories}",
+            "Sugar" to "${_apiFruit.value?.nutritions?.sugar}",
+            "Carbohydrates" to "${_apiFruit.value?.nutritions?.carbohydrates}",
+            "Protein" to "${_apiFruit.value?.nutritions?.protein}",
+            "Fat" to "${_apiFruit.value?.nutritions?.fat}"
         )
     }
 
+    // Factory class for creating instances of FruitApiViewModel
     class FruitApiViewModelFactory(context: Context) : ViewModelProvider.Factory {
         private val context = context.applicationContext
         override fun <T : ViewModel> create(modelClass: Class<T>): T =

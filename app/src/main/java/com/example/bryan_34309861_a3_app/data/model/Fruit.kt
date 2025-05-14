@@ -1,5 +1,8 @@
 package com.example.bryan_34309861_a3_app.data.model
 
+/**
+ * Data class to store the API response from FruityVice API
+ */
 data class Fruit(
     val id: Int,
     val name: String,
@@ -9,6 +12,9 @@ data class Fruit(
     val nutritions: Nutrition
 )
 
+/**
+ * Data class to store the nutrition in the fruit object
+ */
 data class Nutrition(
     val calories: Float,
     val fat: Float,

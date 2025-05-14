@@ -11,30 +11,24 @@ import com.example.bryan_34309861_a3_app.data.repository.PatientRepository
 import kotlinx.coroutines.launch
 
 class PatientViewModel(context: Context): ViewModel() {
+    /**
+     * Repository instance for handling all data operations.
+     * This is the single point of contact for the ViewModel to interact with data sources.
+     */
     val patientRepo = PatientRepository(context)
-    private val _allPatients = MutableLiveData<List<Patient>>()
-    val allPatients: LiveData<List<Patient>>
-        get() = _allPatients
 
-    init {
-        loadPatients()
-    }
-
+    /**
+     * Inserts a new patient into the database.
+     *
+     * @param patient The [Patient] object to be inserted
+     */
     fun insertPatient(patient: Patient) {
         viewModelScope.launch {
             patientRepo.insertPatient(patient)
         }
     }
 
-    fun loadPatients() {
-        viewModelScope.launch {
-            _allPatients.value = patientRepo.getAllPatients()
-        }
-    }
-
-//    fun getPatientById(patientId: String): LiveData<Patient> =
-//        patientRepo.getPatientById(patientId)
-
+    // Factory class for creating instances of PatientViewModel
     class PatientViewModelFactory(context: Context) : ViewModelProvider.Factory {
         private val context = context.applicationContext
         override fun <T : ViewModel> create(modelClass: Class<T>): T =

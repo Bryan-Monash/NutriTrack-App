@@ -1,10 +1,8 @@
 package com.example.bryan_34309861_a3_app.ui.screens.NutriCoachScreen
 
-import coil3.compose.rememberAsyncImagePainter
 import android.content.Context
 import android.util.Log
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,18 +45,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
 import com.example.bryan_34309861_a3_app.data.database.NutriCoachTip
 import com.example.bryan_34309861_a3_app.data.viewModel.GenAIViewModel
 import com.example.bryan_34309861_a3_app.data.util.UiState
 import com.example.bryan_34309861_a3_app.data.viewModel.FruitApiViewModel
 import com.example.bryan_34309861_a3_app.data.viewModel.NutriCoachTipViewModel
+import com.example.bryan_34309861_a3_app.data.viewModel.PicsumApiViewModel
 import com.example.bryan_34309861_a3_app.ui.composables.ErrorContent
 import com.example.bryan_34309861_a3_app.ui.composables.Loading
 import java.time.LocalDateTime
@@ -79,6 +78,10 @@ fun NutriCoachScreen(
         factory = NutriCoachTipViewModel.NutriCoachTipViewModelFactory(context)
     )
 
+    val picsumApiViewModel: PicsumApiViewModel = viewModel(
+        factory = PicsumApiViewModel.PicsumApiViewModelFactory(context)
+    )
+
     val patientUiState = fruitApiViewModel.patientUiState
         .observeAsState()
 
@@ -88,7 +91,7 @@ fun NutriCoachScreen(
         }
 
         is UiState.Success -> {
-            NutriCoachScreenContent(fruitApiViewModel, nutriCoachTipViewModel)
+            NutriCoachScreenContent(fruitApiViewModel, nutriCoachTipViewModel, picsumApiViewModel)
         }
 
         else -> Unit
@@ -98,7 +101,8 @@ fun NutriCoachScreen(
 @Composable
 fun NutriCoachScreenContent(
     fruitApiViewModel: FruitApiViewModel,
-    nutriCoachTipViewModel: NutriCoachTipViewModel
+    nutriCoachTipViewModel: NutriCoachTipViewModel,
+    picsumApiViewModel: PicsumApiViewModel
 ) {
     Column(
         modifier = Modifier
@@ -118,11 +122,7 @@ fun NutriCoachScreenContent(
             horizontalAlignment = Alignment.Start,
         ) {
             if (!fruitApiViewModel.isFruitScoreOptimal()) FruitDetailsSection(fruitApiViewModel)
-            else Image(
-                painter = rememberAsyncImagePainter("https://picsum.photos/300/200"),
-                contentDescription = "Random Image from Picsum",
-                modifier = Modifier.fillMaxSize()
-            )
+            else RandomImage(picsumApiViewModel)
         }
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
         Column(
@@ -131,6 +131,30 @@ fun NutriCoachScreenContent(
         ) {
             GenAISection(nutriCoachTipViewModel)
         }
+    }
+}
+
+@Composable
+fun RandomImage(
+    picsumApiViewModel: PicsumApiViewModel
+) {
+    val imageUrl = picsumApiViewModel.imageUrl
+        .observeAsState()
+
+    val uiState = picsumApiViewModel.uiState
+        .observeAsState()
+
+    when (val state = uiState.value) {
+        is UiState.Loading -> { Loading() }
+        is UiState.Success -> {
+            AsyncImage(
+                model = imageUrl.value,
+                contentDescription = "Random Image from picsum",
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        is UiState.Error -> { Text("NO IMAGE FOUND") }
+        else -> Unit
     }
 }
 
@@ -350,7 +374,7 @@ fun GenAIResponseContent(
 
     nutriCoachTipViewModel.insertTip(
         NutriCoachTip(
-            patientId = nutriCoachTipViewModel.thePatient.value?.patientId?: "",
+            patientId = nutriCoachTipViewModel.patientId,
             tip = response,
             timeAdded = formattedTime,
         )

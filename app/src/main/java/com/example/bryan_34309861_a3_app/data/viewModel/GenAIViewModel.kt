@@ -13,15 +13,32 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class GenAIViewModel : ViewModel() {
+    /**
+     * Generative Model: gemini-1.5-flash
+     */
     private val generativeModel = GenerativeModel(
         modelName = "gemini-1.5-flash",
         apiKey = BuildConfig.apiKey
     )
 
+    /**
+     * Private mutable live data that determines the state of UI while getting
+     * response from the genAI
+     */
     private val _uiState = MutableLiveData<UiState>(UiState.Initial)
+
+    /**
+     * Public immutable LiveData that exposes the current UI state while getting
+     * response from the genAI
+     */
     val uiState: LiveData<UiState>
         get() = _uiState
 
+    /**
+     * Sends a prompt to the genAI model and gets a response from the model
+     *
+     * @param prompt A string to be sent to the genAI
+     */
     fun sendPrompt(
         prompt: String
     ) {
@@ -35,7 +52,6 @@ class GenAIViewModel : ViewModel() {
                     }
                 )
                 response.text?.let { outputContent ->
-                    Log.d("RESPONSE", outputContent)
                     _uiState.postValue(UiState.Success(outputContent))
                 }
             } catch (e: Exception) {

@@ -1,5 +1,8 @@
 package com.example.bryan_34309861_a3_app.data.model
 
+/**
+ * Data class for patient's score and food intake result
+ */
 data class PatientsWithFoodIntake(
     val patientId: String,
     val totalScore: Float,

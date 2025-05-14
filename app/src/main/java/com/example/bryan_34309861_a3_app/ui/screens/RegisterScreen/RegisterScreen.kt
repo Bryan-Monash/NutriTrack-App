@@ -58,8 +58,7 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    val allPatients by registerViewModel.allPatients
-        .observeAsState(initial = emptyList())
+    val allUnregisteredPatients = registerViewModel.getAllUnregisteredPatient()
 
     val thePatient = registerViewModel.getPatientById(patientId)
         .observeAsState()
@@ -118,7 +117,7 @@ fun RegisterScreen(
                     expanded = false
                 },
             ) {
-                allPatients.forEach { patient ->
+                allUnregisteredPatients.forEach { patient ->
                     DropdownMenuItem(
                         text = { Text(patient.patientId) },
                         onClick = {
@@ -192,16 +191,14 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(12.dp))
         Button(
-            onClick = {
-                registerViewModel.validatePatient(
+            onClick = registerViewModel.validatePatient(
                     patientName,
                     phoneNumber,
                     password,
                     confirmPassword,
                     context,
                     navController
-                )
-            },
+                ),
             modifier = Modifier
                 .padding(top = 24.dp)
                 .fillMaxWidth(0.85f)

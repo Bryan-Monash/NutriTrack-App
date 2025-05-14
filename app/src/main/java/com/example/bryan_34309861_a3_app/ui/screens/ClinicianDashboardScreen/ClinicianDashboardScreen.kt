@@ -213,7 +213,7 @@ fun DataAnalysisContent(
                 ) {
                     Text(
                         text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Blue)) {
                                 append(title)
                             }
                             append(" $description")

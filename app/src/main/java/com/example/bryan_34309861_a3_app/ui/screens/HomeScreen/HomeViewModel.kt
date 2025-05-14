@@ -13,22 +13,49 @@ import com.example.bryan_34309861_a3_app.data.util.UiState
 import kotlinx.coroutines.launch
 
 class HomeViewModel(context: Context): ViewModel() {
+    /**
+     * Repository instance for handling all data operations.
+     * This is the single point of contact for the ViewModel to interact with data sources.
+     */
     private val repository = PatientRepository(context)
+
+    /**
+     * Current patient's ID in session
+     */
     private val patientId = AuthManager.getPatientId()?: ""
 
+    /**
+     * Private mutable live data that stores the current patient in session.
+     * Using LiveData provides a way to observe changes to the data over time.
+     */
     private val _thePatient = MutableLiveData<Patient>()
-    val thePatient: LiveData<Patient>
-        get() = _thePatient
 
+    /**
+     * Private mutable live data that determines the state of UI for getting the patient
+     */
     private val _uiState = MutableLiveData<UiState>(UiState.Initial)
+
+    /**
+     * Public immutable LiveData that exposes the current UI state for fetching the patient
+     */
     val uiState: LiveData<UiState>
         get() = _uiState
 
+    /**
+     * Initialize the ViewModel by loading the current patient in session from the repository
+     * This ensures data is available as soon as the UI starts observing.
+     */
     init {
-        loadPatient(patientId)
+        loadPatient()
     }
 
-    fun loadPatient(patientId: String) {
+    /**
+     * Loads the current patient by fetching the latest data from the repository
+     *
+     * This method is responsible for loading the observed LiveData with the
+     * most current data.
+     */
+    private fun loadPatient() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             try {
@@ -41,14 +68,25 @@ class HomeViewModel(context: Context): ViewModel() {
         }
     }
 
+    /**
+     * Retrieves the total HEIFA score of the patient
+     *
+     * @return A Float value representing the total HEIFA score
+     */
     fun getPatientTotalScore(): Float {
-        return thePatient.value?.totalScore?: 0f
+        return _thePatient.value?.totalScore?: 0f
     }
 
+    /**
+     * Retrieves the name of the patient
+     *
+     * @return A string representing the name
+     */
     fun getPatientName(): String {
-        return thePatient.value?.name?: "User"
+        return _thePatient.value?.name?: "User"
     }
 
+    // Factory class for creating instances of HomeViewModel
     class HomeViewModelFactory(context: Context) : ViewModelProvider.Factory {
         private val context = context.applicationContext
         override fun <T : ViewModel> create(modelClass: Class<T>): T =

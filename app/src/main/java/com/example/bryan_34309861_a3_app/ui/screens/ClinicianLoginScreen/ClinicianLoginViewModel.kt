@@ -8,8 +8,19 @@ import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.AppDashboardScreen
 
 class ClinicianLoginViewModel(context: Context): ViewModel() {
+    /**
+     * The predefined key for admin login
+     */
     private val key: String = "dollar-entry-apples"
 
+    /**
+     * Validates the input key and navigates to the clinician dashboard if correct.
+     * Otherwise, displays an error Toast.
+     *
+     * @param inputKey The key entered by the clinician.
+     * @param navController The NavController used to navigate on successful login.
+     * @return A lambda that performs the validation and navigation.
+     */
     fun validateKey(
         inputKey: String,
         context: Context,
@@ -24,6 +35,7 @@ class ClinicianLoginViewModel(context: Context): ViewModel() {
         }
     }
 
+    // Factory class for creating instances of ClinicianLoginViewModel
     class ClinicianLoginViewModelFactory(context: Context) : ViewModelProvider.Factory {
         val context = context.applicationContext
         override fun <T : ViewModel> create(modelClass: Class<T>): T =

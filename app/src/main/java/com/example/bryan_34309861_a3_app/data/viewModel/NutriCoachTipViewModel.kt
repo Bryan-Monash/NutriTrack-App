@@ -17,68 +17,101 @@ import com.example.bryan_34309861_a3_app.data.util.UiState
 import kotlinx.coroutines.launch
 
 class NutriCoachTipViewModel(context: Context): ViewModel() {
+    /**
+     * Repositories instance for handling all data operations.
+     * This is the single point of contact for the ViewModels to interact with data sources.
+     */
     private val nutriRepository = NutriCoachTipRepository(context)
     private val patientRepository = PatientRepository(context)
     private val foodRepository = FoodIntakeRepository(context)
-    private val patientId = AuthManager.getPatientId()?: ""
 
+    /**
+     * Current patient's ID in session
+     */
+    val patientId = AuthManager.getPatientId()?: ""
+
+    /**
+     * Private mutable live data that stores the current patient in session.
+     * Using LiveData provides a way to observe changes to the data over time.
+     */
     private val _thePatient = MutableLiveData<Patient>()
-    val thePatient: LiveData<Patient>
-        get() = _thePatient
 
-    private val _patientUiState = MutableLiveData<UiState>(UiState.Initial)
-    val patientUiState: LiveData<UiState>
-        get() = _patientUiState
-
+    /**
+     * Private mutable live data that stores the foodIntake of the current patient.
+     * Using LiveData provides a way to observe changes to the data over time.
+     */
     private val _foodIntake = MutableLiveData<FoodIntake>()
-    val foodIntake: LiveData<FoodIntake>
-        get() = _foodIntake
 
-    private val _foodUiState = MutableLiveData<UiState>(UiState.Initial)
-    val foodUiState: LiveData<UiState>
-        get() = _foodUiState
-
+    /**
+     * Private mutable live data that stores the list of tips of patient in session.
+     * Using LiveData provides a way to observe changes to the data over time.
+     */
     private val _allTips = MutableLiveData<List<NutriCoachTip>>(emptyList())
+
+    /**
+     * Public immutable LiveData that exposes the current list of tips to the observers
+     *
+     * This property enables the UI to react to changes in the tips data while
+     * preventing direct mutation from outside this class.
+     */
     val allTips: LiveData<List<NutriCoachTip>>
         get() = _allTips
 
+    /**
+     * Private mutable live data that determines the state of UI while getting
+     * all the tips of the patient in the database
+     */
     private val _allTipsUiState = MutableLiveData<UiState>(UiState.Initial)
+
+    /**
+     * Public immutable LiveData that exposes the state of UI while getting
+     * all the tips of the patient in the database
+     */
     val allTipsUiState: LiveData<UiState>
         get() = _allTipsUiState
 
+    /**
+     * Initialize the ViewModel by loading the current patient with his/her
+     * foodIntake and all the tips
+     * This ensures data is available as soon as the UI starts observing
+     */
     init {
         loadPatient(patientId)
         loadFoodIntake(patientId)
         loadAllTips()
     }
 
-    fun loadPatient(patientId: String) {
+    /**
+     * Loads the current patient by fetching the latest data from the repository
+     *
+     * This method is responsible for loading the observed LiveData with the
+     * most current data.
+     */
+    private fun loadPatient(patientId: String) {
         viewModelScope.launch {
-            _patientUiState.value = UiState.Loading
-            try {
-                val patient = patientRepository.getPatientById(patientId)
-                _thePatient.value = patient
-                _patientUiState.value = UiState.Success("Patient loaded")
-            } catch (e:Exception) {
-                _patientUiState.value = UiState.Error("Error loading patient: ${e.localizedMessage}")
-            }
+            val patient = patientRepository.getPatientById(patientId)
+            _thePatient.value = patient
         }
     }
 
-    fun loadFoodIntake(patientId: String) {
+    /**
+     * Loads the current patient's foodIntake by fetching the latest data from the repository
+     *
+     * This method is responsible for loading the observed LiveData with the most current data.
+     */
+    private fun loadFoodIntake(patientId: String) {
         viewModelScope.launch {
-            _foodUiState.value = UiState.Loading
-            try {
-                val foodIntake = foodRepository.getAllIntakesByPatientId(patientId)
-                _foodIntake.value = foodIntake
-                _foodUiState.value = UiState.Success("Questionnaire fetched successfully")
-            } catch (e: Exception) {
-                _foodUiState.value = UiState.Error(" Error loading questionnaire: ${e.localizedMessage}")
-            }
+            val foodIntake = foodRepository.getAllIntakesByPatientId(patientId)
+            _foodIntake.value = foodIntake
         }
     }
 
-    fun loadAllTips() {
+    /**
+     * Loads the current patient's nutriCoachTips by fetching the latest data from the repository
+     *
+     * This method is responsible for loading the observed LiveData with the most current data.
+     */
+    private fun loadAllTips() {
         viewModelScope.launch {
             _allTipsUiState.value = UiState.Loading
             try {
@@ -91,27 +124,39 @@ class NutriCoachTipViewModel(context: Context): ViewModel() {
         }
     }
 
-    fun getPatientScore(): List<Pair<String, Float>> {
+    /**
+     * Retrieve a list of pairs of (label, score) of patient's score
+     *
+     * @return A list of pairs(String, Float) where the string is the label
+     * and the Float is the score
+     */
+    private fun getPatientScore(): List<Pair<String, Float>> {
         return listOf(
-            "Total Score" to (thePatient.value?.totalScore ?: 0f),
-            "Vegetables" to (thePatient.value?.vegetableScore ?: 0f),
-            "Fruits" to (thePatient.value?.fruitsScore?: 0f),
-            "Grains & Cereal" to (thePatient.value?.grainsScore?: 0f),
-            "Whole Grains" to (thePatient.value?.wholeGrainsScore?: 0f),
-            "Meat & Alternatives" to (thePatient.value?.meatAlternativesScore?: 0f),
-            "Dairy" to (thePatient.value?.dairyScore?: 0f),
-            "Water" to (thePatient.value?.waterScore?: 0f),
-            "Saturated Fat" to (thePatient.value?.saturatedFatScore?: 0f),
-            "Unsaturated Fat" to (thePatient.value?.unsaturatedFatScore?: 0f),
-            "Sodium" to (thePatient.value?.sodiumScore?: 0f),
-            "Sugar" to (thePatient.value?.sugarScore?: 0f),
-            "Alcohol" to (thePatient.value?.alcoholScore?: 0f),
-            "Discretionary" to (thePatient.value?.discretionaryScore?: 0f)
+            "Total Score" to (_thePatient.value?.totalScore ?: 0f),
+            "Vegetables" to (_thePatient.value?.vegetableScore ?: 0f),
+            "Fruits" to (_thePatient.value?.fruitsScore?: 0f),
+            "Grains & Cereal" to (_thePatient.value?.grainsScore?: 0f),
+            "Whole Grains" to (_thePatient.value?.wholeGrainsScore?: 0f),
+            "Meat & Alternatives" to (_thePatient.value?.meatAlternativesScore?: 0f),
+            "Dairy" to (_thePatient.value?.dairyScore?: 0f),
+            "Water" to (_thePatient.value?.waterScore?: 0f),
+            "Saturated Fat" to (_thePatient.value?.saturatedFatScore?: 0f),
+            "Unsaturated Fat" to (_thePatient.value?.unsaturatedFatScore?: 0f),
+            "Sodium" to (_thePatient.value?.sodiumScore?: 0f),
+            "Sugar" to (_thePatient.value?.sugarScore?: 0f),
+            "Alcohol" to (_thePatient.value?.alcoholScore?: 0f),
+            "Discretionary" to (_thePatient.value?.discretionaryScore?: 0f)
         )
     }
 
-    fun getPatientFoodIntake(): List<Pair<String, Boolean>> {
-        val checkboxes = foodIntake.value?.checkboxes
+    /**
+     * Retrieve a list of pairs of (label, boolean) of patient's foodIntake
+     *
+     * @return A list of pairs(String, Boolean) where the string is the label
+     * and the Boolean is either the patients eats or don't eat
+     */
+    private fun getPatientFoodIntake(): List<Pair<String, Boolean>> {
+        val checkboxes = _foodIntake.value?.checkboxes
         return listOf(
             "Fruits" to (checkboxes?.get(0)?: false),
             "Vegetables" to (checkboxes?.get(1)?: false),
@@ -125,6 +170,11 @@ class NutriCoachTipViewModel(context: Context): ViewModel() {
         )
     }
 
+    /**
+     * Generate a prompt based on the patient's score and food intake
+     *
+     * @return A string value to pass it to the genAI
+     */
     fun generatePrompt(): String {
         val scores = getPatientScore().toMap()
         val foodIntake = getPatientFoodIntake().toMap()
@@ -152,6 +202,13 @@ class NutriCoachTipViewModel(context: Context): ViewModel() {
                 """.trimIndent()
     }
 
+    /**
+     * Inserts a new tip into the database
+     * Load the tips everytime a new tip is inserted
+     *
+     * @param nutriCoachTip The [NutriCoachTip] object to be
+     * inserted in the database
+     */
     fun insertTip(nutriCoachTip: NutriCoachTip) {
         viewModelScope.launch {
             nutriRepository.insertTip(nutriCoachTip)
@@ -159,6 +216,7 @@ class NutriCoachTipViewModel(context: Context): ViewModel() {
         }
     }
 
+    // Factory class for creating instances of NutriCoachTipViewModel
     class NutriCoachTipViewModelFactory(context: Context) : ViewModelProvider.Factory {
         private val context = context.applicationContext
         override fun <T : ViewModel> create(modelClass: Class<T>): T =

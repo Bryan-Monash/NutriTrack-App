@@ -13,22 +13,49 @@ import com.example.bryan_34309861_a3_app.data.util.UiState
 import kotlinx.coroutines.launch
 
 class InsightViewModel(context: Context): ViewModel() {
+    /**
+     * Repository instance for handling all data operations.
+     * This is the single point of contact for the ViewModel to interact with data sources.
+     */
     private val repository = PatientRepository(context)
+
+    /**
+     * Patient's ID in the current session
+     */
     private val patientId = AuthManager.getPatientId()?: ""
 
+    /**
+     * Private mutable live data that stores the patient
+     * Using LiveData provides a way to observe changes to the data in real time
+     */
     private val _thePatient = MutableLiveData<Patient>()
-    val thePatient: LiveData<Patient>
-        get() = _thePatient
 
+    /**
+     * Private mutable live data that determines the state of UI for getting the patient
+     */
     private val _uiState = MutableLiveData<UiState>(UiState.Initial)
+
+    /**
+     * Public immutable LiveData that exposes the current UI state for fetching the patient
+     */
     val uiState: LiveData<UiState>
         get() = _uiState
 
+    /**
+     * Initialize the ViewModel by loading the current patient in session from the repository
+     * This ensures data is available as soon as the UI starts observing.
+     */
     init {
-        loadPatient(patientId)
+        loadPatient()
     }
 
-    fun loadPatient(patientId: String) {
+    /**
+     * Loads the current patient by fetching the latest data from the repository
+     *
+     * This method is responsible for loading the observed LiveData with the
+     * most current data.
+     */
+    private fun loadPatient() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             try {
@@ -41,28 +68,40 @@ class InsightViewModel(context: Context): ViewModel() {
         }
     }
 
+    /**
+     * Retrieves the total HEIFA score of the patient
+     *
+     * @return A Float value representing the total HEIFA score
+     */
     fun getPatientTotalScore(): Float {
-        return thePatient.value?.totalScore?: 0f
+        return _thePatient.value?.totalScore?: 0f
     }
 
+    /**
+     * Retrieves all the scores of the patient
+     *
+     * @return A list of pairs (String, Float) where the string is the label
+     * and the Float is the score
+     */
     fun getPatientScore(): List<Pair<String, Float>> {
         return listOf(
-            "Vegetables" to (thePatient.value?.vegetableScore ?: 0f),
-            "Fruits" to (thePatient.value?.fruitsScore?: 0f),
-            "Grains & Cereal" to (thePatient.value?.grainsScore?: 0f),
-            "Whole Grains" to (thePatient.value?.wholeGrainsScore?: 0f),
-            "Meat & Alternatives" to (thePatient.value?.meatAlternativesScore?: 0f),
-            "Dairy" to (thePatient.value?.dairyScore?: 0f),
-            "Water" to (thePatient.value?.waterScore?: 0f),
-            "Saturated Fat" to (thePatient.value?.saturatedFatScore?: 0f),
-            "Unsaturated Fat" to (thePatient.value?.unsaturatedFatScore?: 0f),
-            "Sodium" to (thePatient.value?.sodiumScore?: 0f),
-            "Sugar" to (thePatient.value?.sugarScore?: 0f),
-            "Alcohol" to (thePatient.value?.alcoholScore?: 0f),
-            "Discretionary" to (thePatient.value?.discretionaryScore?: 0f)
+            "Vegetables" to (_thePatient.value?.vegetableScore ?: 0f),
+            "Fruits" to (_thePatient.value?.fruitsScore?: 0f),
+            "Grains & Cereal" to (_thePatient.value?.grainsScore?: 0f),
+            "Whole Grains" to (_thePatient.value?.wholeGrainsScore?: 0f),
+            "Meat & Alternatives" to (_thePatient.value?.meatAlternativesScore?: 0f),
+            "Dairy" to (_thePatient.value?.dairyScore?: 0f),
+            "Water" to (_thePatient.value?.waterScore?: 0f),
+            "Saturated Fat" to (_thePatient.value?.saturatedFatScore?: 0f),
+            "Unsaturated Fat" to (_thePatient.value?.unsaturatedFatScore?: 0f),
+            "Sodium" to (_thePatient.value?.sodiumScore?: 0f),
+            "Sugar" to (_thePatient.value?.sugarScore?: 0f),
+            "Alcohol" to (_thePatient.value?.alcoholScore?: 0f),
+            "Discretionary" to (_thePatient.value?.discretionaryScore?: 0f)
         )
     }
 
+    // Factory class for creating instances of InsightViewModel
     class InsightViewModelFactory(context: Context) : ViewModelProvider.Factory {
         private val context = context.applicationContext
         override fun <T : ViewModel> create(modelClass: Class<T>): T =

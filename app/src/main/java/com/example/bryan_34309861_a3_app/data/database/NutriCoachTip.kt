@@ -3,6 +3,9 @@ package com.example.bryan_34309861_a3_app.data.database
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+/**
+ * Represents a nutriCoachTip entity within the Room database
+ */
 @Entity(tableName = "NutriCoachTips")
 data class NutriCoachTip(
     @PrimaryKey(autoGenerate = true)

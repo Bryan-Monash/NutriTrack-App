@@ -54,9 +54,7 @@ fun PatientLoginScreen(
 
     val patientId = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
-    val allPatients = patientLoginViewModel.allPatients
-        .observeAsState()
-
+    val allRegisteredPatients = patientLoginViewModel.getAllRegisteredPatient()
     var expanded by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -109,7 +107,7 @@ fun PatientLoginScreen(
                     expanded = false
                 },
             ) {
-                allPatients.value?.forEach { patient ->
+                allRegisteredPatients.forEach { patient ->
                     DropdownMenuItem(
                         text = { Text(patient.patientId) },
                         onClick = {

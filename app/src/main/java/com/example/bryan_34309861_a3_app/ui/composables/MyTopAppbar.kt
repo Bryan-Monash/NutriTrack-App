@@ -26,15 +26,15 @@ fun MyTopAppBar(
         title = {
             Text("Food Intake Questionnaire", maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
-        navigationIcon = {
-            IconButton(onClick = {
-                navController.popBackStack()
-            }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "back"
-                )
-            }
-        }
+//        navigationIcon = {
+//            IconButton(onClick = {
+//                navController.popBackStack()
+//            }) {
+//                Icon(
+//                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                    contentDescription = "back"
+//                )
+//            }
+//        }
     )
 }

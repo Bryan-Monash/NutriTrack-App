@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -111,7 +110,7 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         context = context,
                         darkModeEnabled = darkModeEnabled,
-                        onToggleDarkMode =  { darkModeEnabled = it }
+                        onToggleDarkMode =  { darkModeEnabled = it },
                     )
                 }
             }
@@ -132,7 +131,7 @@ fun AppDashboardContent(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        NavHostApp(navController, context, onToggleDarkMode, darkModeEnabled)
+        NavHostApp(navController, context,darkModeEnabled, onToggleDarkMode)
     }
 }
 
@@ -140,8 +139,8 @@ fun AppDashboardContent(
 fun NavHostApp(
     navController: NavHostController,
     context: Context,
-    onToggleDarkMode: (Boolean) -> Unit,
     darkModeEnabled: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
