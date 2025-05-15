@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Badge
@@ -53,93 +54,107 @@ fun SettingsScreen(
     val settingsViewModel: SettingsViewModel = viewModel(
         factory = SettingsViewModel.SettingViewModelFactory(context)
     )
-    val thePatient = settingsViewModel.thePatient
-        .observeAsState()
-
+    val thePatient = settingsViewModel.thePatient.observeAsState()
     var isDark by rememberSaveable { mutableStateOf(darkModeEnabled) }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Settings",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "ACCOUNT",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Gray
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        SettingRow(icon = Icons.Default.Person, thePatient.value?.name?: "")
-        Spacer(modifier = Modifier.height(16.dp))
-        SettingRow(icon = Icons.Default.Phone, thePatient.value?.phoneNumber?: "")
-        Spacer(modifier = Modifier.height(16.dp))
-        SettingRow(Icons.Default.Badge, thePatient.value?.patientId?: "")
-        Spacer(modifier = Modifier.height(16.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "OTHER SETTINGS",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Gray
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        SettingRow(
-            icon = Icons.Default.ExitToApp,
-            text = "Logout",
-            trailingIcon = Icons.Default.ArrowForward,
-            onClick = settingsViewModel.logout(navController, context)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        SettingRow(
-            icon = Icons.Default.SupervisorAccount,
-            text = "Clinician Login",
-            trailingIcon = Icons.Default.ArrowForward,
-            onClick = settingsViewModel.clinicianLogin(navController)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    isDark = !isDark
-                    onToggleDarkMode(isDark)
-                }
-                .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Create,
-                    contentDescription = "Dark Mode",
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.padding(start = 8.dp))
-                Text(text = "Dark Mode", fontSize = 16.sp)
-            }
-            Switch(
-                checked = isDark,
-                onCheckedChange = {
-                    isDark = it
-                    onToggleDarkMode(it)
-                },
-                colors = SwitchDefaults.colors(checkedThumbColor = Color.Black)
+        item {
+            Text(
+                text = "Settings",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(0.9f)
             )
         }
 
+        item {
+            Text(
+                text = "ACCOUNT",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Gray,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth(0.9f)
+            )
+        }
+
+        item { SettingRow(icon = Icons.Default.Person, text = thePatient.value?.name ?: "") }
+        item { SettingRow(icon = Icons.Default.Phone, text = thePatient.value?.phoneNumber ?: "") }
+        item { SettingRow(Icons.Default.Badge, text = thePatient.value?.patientId ?: "") }
+
+        item { HorizontalDivider() }
+
+        item {
+            Text(
+                text = "OTHER SETTINGS",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Gray,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth(0.9f)
+            )
+        }
+
+        item {
+            SettingRow(
+                icon = Icons.Default.ExitToApp,
+                text = "Logout",
+                trailingIcon = Icons.Default.ArrowForward,
+                onClick = settingsViewModel.logout(navController, context)
+            )
+        }
+
+        item {
+            SettingRow(
+                icon = Icons.Default.SupervisorAccount,
+                text = "Clinician Login",
+                trailingIcon = Icons.Default.ArrowForward,
+                onClick = settingsViewModel.clinicianLogin(navController)
+            )
+        }
+
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .clickable {
+                        isDark = !isDark
+                        onToggleDarkMode(isDark)
+                    }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.8f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Create,
+                        contentDescription = "Dark Mode",
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Dark Mode", fontSize = 16.sp)
+                }
+
+                Switch(
+                    checked = isDark,
+                    onCheckedChange = {
+                        isDark = it
+                        onToggleDarkMode(it)
+                    },
+                    colors = SwitchDefaults.colors(checkedThumbColor = Color.Black)
+                )
+            }
+        }
     }
 }
 
@@ -152,7 +167,7 @@ fun SettingRow(
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(0.9f)
             .padding(vertical = 8.dp)
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         verticalAlignment = Alignment.CenterVertically,

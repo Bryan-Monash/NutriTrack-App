@@ -27,13 +27,13 @@ class FoodIntakeRepository(context: Context) {
      * @param checkboxes the checkboxes from the UI
      * @param index the index of the checkbox being changed
      */
-    suspend fun updateFoodIntakeCheckbox(foodIntake: FoodIntake, checkboxes: List<Boolean>, index: Int) {
-        val newCheckbox = checkboxes.toMutableList().apply {
-            this.set(index, !checkboxes[index])
-        }
-        foodIntake.checkboxes = newCheckbox
-        foodIntakeDao.updateFoodIntake(foodIntake)
+    suspend fun updateFoodIntakeCheckbox(foodIntake: FoodIntake, index: Int) {
+        val updatedCheckboxes = foodIntake.checkboxes.toMutableList()
+        updatedCheckboxes[index] = !updatedCheckboxes[index]
+        val updatedFoodIntake = foodIntake.copy(checkboxes = updatedCheckboxes)
+        foodIntakeDao.updateFoodIntake(updatedFoodIntake)
     }
+
 
     /**
      * Updates the persona in the foodIntake object

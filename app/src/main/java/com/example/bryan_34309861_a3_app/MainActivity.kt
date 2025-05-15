@@ -10,8 +10,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -32,6 +36,7 @@ import com.example.bryan_34309861_a3_app.data.database.FoodIntake
 import com.example.bryan_34309861_a3_app.data.viewModel.FoodIntakeViewModel
 import com.example.bryan_34309861_a3_app.data.database.Patient
 import com.example.bryan_34309861_a3_app.data.viewModel.PatientViewModel
+import com.example.bryan_34309861_a3_app.ui.composables.ClinicianDashboardFAB
 import com.example.bryan_34309861_a3_app.ui.composables.MyBottomAppBar
 import com.example.bryan_34309861_a3_app.ui.composables.MyTopAppBar
 import com.example.bryan_34309861_a3_app.ui.screens.ClinicianDashboardScreen.ClinicianDashboardScreen
@@ -102,6 +107,11 @@ class MainActivity : ComponentActivity() {
                         if (currentRoute?.destination?.route
                             == AppDashboardScreen.Questionnaire.route) {
                             MyTopAppBar(navController)
+                        }
+                    },
+                    floatingActionButton = {
+                        if (currentRoute?.destination?.route == AppDashboardScreen.ClinicianDashboard.route) {
+                            ClinicianDashboardFAB(navController)
                         }
                     }
                 ) { innerPadding ->

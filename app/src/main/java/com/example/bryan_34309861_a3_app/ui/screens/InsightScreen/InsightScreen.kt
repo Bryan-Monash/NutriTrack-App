@@ -3,6 +3,7 @@ package com.example.bryan_34309861_a3_app.ui.screens.InsightScreen
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,20 +12,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -65,7 +68,6 @@ fun InsightScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsightContent(
     navController: NavHostController,
@@ -73,107 +75,177 @@ fun InsightContent(
     _context: Context
 ) {
     val scoreMap = insightViewModel.getPatientScore()
-
     val totalScore = insightViewModel.getPatientTotalScore()
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.Top,
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Insights: Food Score", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn {
-            itemsIndexed(scoreMap) { _, (label, score) ->
-                val cappedScore = when (label) {
-                    "Grains & Cereal", "Whole Grain", "Alcohol", "Water", "Saturated Fat", "Unsaturated Fat" -> 5f
-                    else -> 10f
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    Column(
-                        modifier = Modifier.weight(0.3f),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        // Text label
-                        Text(text = "$label: ", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    }
-                    Column(
-                        modifier = Modifier.weight(0.5f),
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        val progressRatio = score / cappedScore
-                        val trackColor = when {
-                            progressRatio >= 0.8f -> Color.Green
-                            progressRatio >= 0.5f -> Color.Yellow
-                            else -> Color.Red
-                        }
-                        LinearProgressIndicator(
-                            progress = { score / cappedScore },
-                            modifier = Modifier.padding(10.dp),
-                            color = when {
-                                score / cappedScore >= 0.8 -> Color.Green
-                                score / cappedScore >= 0.5 -> Color.Yellow
-                                else -> Color.Red
-                            },
-                            gapSize = (-15).dp,
-                            drawStopIndicator = {}
-                        )
-                    }
-                    Column(
-                        modifier = Modifier
-                            .weight(0.2f)
-                            .wrapContentSize(),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Text(
-                            text = "$score / $cappedScore",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Total Food Quality Score",
-            fontWeight = FontWeight.Bold,
-            fontSize = 24.sp
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            LinearProgressIndicator(
-                progress = { (totalScore ?: 0f) / 100F },
-                modifier = Modifier.padding(10.dp),
-                gapSize = (-15).dp,
-                drawStopIndicator = {}
+        item {
+            Text(
+                text = "Insights: Food Score",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
             )
-            Text("$totalScore/100")
         }
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = {
-            val shareIntent = Intent(ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, "Hi! I've got a HEIFA score of $totalScore!")
+
+        itemsIndexed(scoreMap) { _, (label, score) ->
+            val cappedScore = when (label) {
+                "Grains & Cereal", "Whole Grain", "Alcohol", "Water", "Saturated Fat", "Unsaturated Fat" -> 5f
+                else -> 10f
             }
-            _context.startActivity(Intent.createChooser(shareIntent, "Share text via"))
-        }) {
-            Text("Share with someone")
+            val progressRatio = score / cappedScore
+            val trackColor = when {
+                progressRatio >= 0.8f -> Color(0xFF4CAF50)   // Green
+                progressRatio >= 0.5f -> Color(0xFFFFC107)   // Amber
+                else -> Color(0xFFF44336)                   // Red
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = label,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    ProgressBarWithIndicator(
+                        progress = progressRatio,
+                        progressColor = trackColor,
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                    )
+
+                    Text(
+                        text = "${score} / ${cappedScore}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                    )
+                }
+            }
         }
-        Button(onClick = {
-            navController.navigate(AppDashboardScreen.NutriCoach.route)
-        }) {
-            Text("Improve my diet!")
+
+
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Total Food Quality Score",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+            )
         }
+
+        item {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth(0.9f)
+            ) {
+                ProgressBarWithIndicator(
+                    progress = totalScore / 100,
+                    progressColor = Color.Blue,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        item {
+            Text(
+                "$totalScore / 100",
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    val shareIntent = Intent(ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, "Hi! I've got a HEIFA score of $totalScore!")
+                    }
+                    _context.startActivity(Intent.createChooser(shareIntent, "Share text via"))
+                },
+                modifier = Modifier.fillMaxWidth(0.9f)
+            ) {
+                Text("Share with someone")
+            }
+        }
+
+        item {
+            Button(
+                onClick = {
+                    navController.navigate(AppDashboardScreen.NutriCoach.route)
+                },
+                modifier = Modifier.fillMaxWidth(0.9f)
+            ) {
+                Text("Improve my diet!")
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(24.dp)) }
+    }
+}
+
+@Composable
+fun ProgressBarWithIndicator(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    barColor: Color = Color.LightGray,
+    progressColor: Color = Color.Green,
+    indicatorFillColor: Color = Color.White,
+    indicatorBorderColor: Color = Color(0xFF008080),
+    height: Dp = 10.dp,
+    circleRadius: Dp = 10.dp,
+    borderWidth: Dp = 2.dp
+) {
+    Canvas(modifier = modifier.height(height)) {
+        val width = size.width
+        val heightPx = size.height
+        val progressX = (progress.coerceIn(0f, 1f)) * width
+        val center = Offset(progressX, heightPx / 2)
+
+        // Draw background track
+        drawRoundRect(
+            color = barColor,
+            size = size,
+            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
+        )
+
+        // Draw progress fill
+        drawRoundRect(
+            color = progressColor,
+            size = Size(progressX, heightPx),
+            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx())
+        )
+
+        // Draw circle border
+        drawCircle(
+            color = indicatorBorderColor,
+            radius = circleRadius.toPx(),
+            center = center
+        )
+
+        // Draw inner filled circle
+        drawCircle(
+            color = indicatorFillColor,
+            radius = (circleRadius - borderWidth).toPx().coerceAtLeast(0f),
+            center = center
+        )
     }
 }

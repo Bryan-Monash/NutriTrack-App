@@ -70,13 +70,13 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      */
     private fun loadFoodIntake() {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
+//            _uiState.value = UiState.Loading
             try {
                 val foodIntake = repository.getAllIntakesByPatientId(patientId)
                 _foodIntake.value = foodIntake
-                _uiState.value = UiState.Success("Questionnaire fetched successfully")
+//                _uiState.value = UiState.Success("Questionnaire fetched successfully")
             } catch (e: Exception) {
-                _uiState.value = UiState.Error(" Error loading questionnaire: ${e.localizedMessage}")
+//                _uiState.value = UiState.Error(" Error loading questionnaire: ${e.localizedMessage}")
             }
         }
     }
@@ -88,9 +88,9 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      * @param checkboxes the checkboxes from the UI
      * @param index the index of the checkbox being changed
      */
-    fun updateCheckbox(checkboxes: List<Boolean>, index: Int) {
+    fun updateCheckbox(index: Int) {
         viewModelScope.launch {
-            _foodIntake.value?.let { repository.updateFoodIntakeCheckbox(it, checkboxes, index) }
+            repository.updateFoodIntakeCheckbox(_foodIntake.value!!, index)
             loadFoodIntake()
         }
     }

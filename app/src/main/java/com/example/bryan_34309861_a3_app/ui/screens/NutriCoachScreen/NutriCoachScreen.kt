@@ -2,20 +2,21 @@ package com.example.bryan_34309861_a3_app.ui.screens.NutriCoachScreen
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -29,7 +30,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -104,31 +105,48 @@ fun NutriCoachScreenContent(
     nutriCoachTipViewModel: NutriCoachTipViewModel,
     picsumApiViewModel: PicsumApiViewModel
 ) {
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "NutriCoach",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            fontWeight = FontWeight.Bold
-        )
-        Column(
-            modifier = Modifier.weight(0.5f),
-            horizontalAlignment = Alignment.Start,
-        ) {
-            if (!fruitApiViewModel.isFruitScoreOptimal()) FruitDetailsSection(fruitApiViewModel)
-            else RandomImage(picsumApiViewModel)
+        item {
+            Text(
+                text = "NutriCoach",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Bold,
+            )
         }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-        Column(
-            modifier = Modifier.weight(0.5f),
-            horizontalAlignment = Alignment.Start,
-        ) {
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .heightIn(min = 300.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (!fruitApiViewModel.isFruitScoreOptimal()) {
+                    FruitDetailsSection(fruitApiViewModel)
+                } else {
+                    RandomImage(picsumApiViewModel)
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
             GenAISection(nutriCoachTipViewModel)
         }
     }
@@ -150,7 +168,8 @@ fun RandomImage(
             AsyncImage(
                 model = imageUrl.value,
                 contentDescription = "Random Image from picsum",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
         }
         is UiState.Error -> { Text("NO IMAGE FOUND") }
@@ -163,6 +182,8 @@ fun FruitDetailsSection(
     fruitApiViewModel: FruitApiViewModel,
 ) {
     var fruitName by remember { mutableStateOf("") }
+    val uiState = fruitApiViewModel.uiState
+        .observeAsState()
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -200,7 +221,7 @@ fun FruitDetailsSection(
             onClick = {
                 fruitApiViewModel.getFruitDetailByName(fruitName)
             },
-            enabled = fruitName.isNotEmpty(),
+            enabled = fruitName.isNotEmpty() && uiState.value !is UiState.Loading,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -216,39 +237,30 @@ fun FruitDetailsSection(
             )
         }
     }
-    FruitDetailsTable(fruitApiViewModel)
+    uiState.value?.let { FruitDetailsTable(fruitApiViewModel, it) }
 }
 
 @Composable
 fun FruitDetailsTable(
     fruitApiViewModel: FruitApiViewModel,
+    uiState: UiState
 ) {
-    val uiState = fruitApiViewModel.uiState
-        .observeAsState()
 
-    when (val state = uiState.value) {
+    when (uiState) {
         is UiState.Initial -> {
             Text(
                 text = "Please type in a fruit type"
             )
         }
         is UiState.Loading -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentSize(Alignment.Center)
-            ) { CircularProgressIndicator()
-                Text(
-                    text = "Loading..."
-                )
-            }
+            Loading()
         }
         is UiState.Success -> {
             FruitDetailsTableContent(fruitApiViewModel)
         }
         is UiState.Error -> {
             Text(
-                text = "Error: ${state.errorMessage}",
+                text = "Error: ${uiState.errorMessage}",
                 color = MaterialTheme.colorScheme.error
             )
         }
@@ -288,8 +300,7 @@ fun FruitDetailsTableContent(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "$label:",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -311,53 +322,67 @@ fun GenAISection(
 ) {
     var showModal = remember { mutableStateOf(false) }
     val prompt = nutriCoachTipViewModel.generatePrompt()
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Button(
-            onClick = {
-                genAIViewModel.sendPrompt(prompt)
-            },
-            modifier = Modifier
-                .align(Alignment.Start)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Create,
-                contentDescription = "Generate AI response"
-            )
-            Text(
-                text = "Motivational Message (AI)",
-                fontSize = 16.sp
-            )
-        }
-        GenAIResponse(genAIViewModel, nutriCoachTipViewModel)
+    val uiState = genAIViewModel.uiState
+        .observeAsState()
 
-        Button(
-            onClick = { showModal.value = true },
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .padding(bottom = 16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(0.8f),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Show All Tips")
+            Button(
+                onClick = {
+                    genAIViewModel.sendPrompt(prompt)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uiState.value !is UiState.Loading
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Create,
+                    contentDescription = "Generate AI response"
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Motivational Message (AI)",
+                    fontSize = 16.sp
+                )
+            }
+
+            Button(
+                onClick = { showModal.value = true },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uiState.value !is UiState.Loading
+            ) {
+                Text("Show All Tips")
+            }
         }
-        ShowTips(nutriCoachTipViewModel, showModal)
+        uiState.value?.let { GenAIResponse(genAIViewModel, nutriCoachTipViewModel, it) }
     }
+    ShowTips(nutriCoachTipViewModel, showModal)
 }
+
 
 @Composable
 fun GenAIResponse(
     genAIViewModel: GenAIViewModel,
-    nutriCoachTipViewModel: NutriCoachTipViewModel
+    nutriCoachTipViewModel: NutriCoachTipViewModel,
+    uiState: UiState
 ) {
-    val uiState = genAIViewModel.uiState
-        .observeAsState()
-    when (val state = uiState.value) {
+    when (uiState) {
         is UiState.Loading -> {
             Loading()
         }
         is UiState.Success -> {
-            GenAIResponseContent(state.outputText, nutriCoachTipViewModel)
+            GenAIResponseContent(uiState.outputText, nutriCoachTipViewModel)
         }
         is UiState.Error -> {
-            ErrorContent(state.errorMessage)
+            ErrorContent(uiState.errorMessage)
         }
         else -> Unit
     }
@@ -379,7 +404,6 @@ fun GenAIResponseContent(
             timeAdded = formattedTime,
         )
     )
-    val scrollState = rememberScrollState()
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -396,7 +420,6 @@ fun GenAIResponseContent(
                 lineHeight = 20.sp,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .verticalScroll(scrollState)
             )
         }
     }
@@ -435,7 +458,6 @@ fun ShowTipsContent(
             .observeAsState().value
 
         AlertDialog(
-//            modifier = Modifier.verticalScroll(scrollState),
             onDismissRequest = { showModal.value = false },
             dismissButton = {
                 Box(

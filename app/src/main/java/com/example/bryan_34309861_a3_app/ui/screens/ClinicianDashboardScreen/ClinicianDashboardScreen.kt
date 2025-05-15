@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.bryan_34309861_a3_app.AppDashboardScreen
 import com.example.bryan_34309861_a3_app.data.viewModel.GenAIViewModel
 import com.example.bryan_34309861_a3_app.data.util.UiState
 import com.example.bryan_34309861_a3_app.ui.composables.ErrorContent
@@ -54,68 +53,57 @@ fun ClinicianDashboardScreen(
         factory = ClinicianDashboardViewModel.ClinicianDashboardViewModelFactory(context)
     )
 
-    val maleScore = dashboardViewModel.maleScore
-        .observeAsState()
-    val femaleScore = dashboardViewModel.femaleScore
-        .observeAsState()
+    val maleScore = dashboardViewModel.maleScore.observeAsState()
+    val femaleScore = dashboardViewModel.femaleScore.observeAsState()
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier
-                .weight(0.2f)
-                .padding(8.dp)
-        ) {
+        item {
             Text(
                 text = "Clinician Dashboard",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
-            HEIFARow(label = "Average HEIFA (Male)", value = maleScore.value?: 0f)
-            Spacer(modifier = Modifier.height(8.dp))
-            HEIFARow(label = "Average HEIFA (Female)", value = femaleScore.value?: 0f)
         }
-        HorizontalDivider()
-        Column(
-            modifier = Modifier
-                .weight(0.75f)
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+
+        item {
+            HEIFARow(label = "Average HEIFA (Male)", value = maleScore.value ?: 0f)
+            Spacer(modifier = Modifier.height(8.dp))
+            HEIFARow(label = "Average HEIFA (Female)", value = femaleScore.value ?: 0f)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        }
+
+        item {
             DataAnalysisSection(context, dashboardViewModel)
         }
-        Button(
-            onClick = {
-                navController.navigate(AppDashboardScreen.Settings.route) {
-                    popUpTo(AppDashboardScreen.ClinicianDashboard.route) { inclusive = true }
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.5f)
-                .padding(top = 16.dp)
-        ) {
-            Text("Done")
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
+
 
 @Composable
 fun HEIFARow(label: String, value: Float) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(0.9f)
             .border(
                 width = 1.dp,
                 color = Color.Gray,
                 shape = RoundedCornerShape(8.dp)
             )
             .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
-            .padding(12.dp)
+            .padding(12.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -142,12 +130,14 @@ fun DataAnalysisSection(
     genAIViewModel: GenAIViewModel = viewModel(),
 ) {
     val prompt = dashboardViewModel.getPrompt(context)
-    Log.d("PROMPT", prompt)
+    val uiState = genAIViewModel.uiState
+        .observeAsState()
 
     Button(
         onClick = { genAIViewModel.sendPrompt(prompt) },
         modifier = Modifier
-            .fillMaxWidth(0.6f)
+            .fillMaxWidth(0.6f),
+        enabled = uiState.value !is UiState.Loading
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -165,25 +155,23 @@ fun DataAnalysisSection(
         }
     }
     Spacer(modifier = Modifier.height(8.dp))
-    DataAnalysisResponse(dashboardViewModel,genAIViewModel)
+    DataAnalysisResponse(dashboardViewModel, uiState.value!!)
 }
 
 @Composable
 fun DataAnalysisResponse(
     dashboardViewModel: ClinicianDashboardViewModel,
-    genAIViewModel: GenAIViewModel
+    uiState: UiState
 ) {
-    val uiState = genAIViewModel.uiState
-        .observeAsState()
-    when (val state = uiState.value) {
+    when (uiState) {
         is UiState.Loading -> {
             Loading()
         }
         is UiState.Success -> {
-            DataAnalysisContent(state.outputText, dashboardViewModel)
+            DataAnalysisContent(uiState.outputText, dashboardViewModel)
         }
         is UiState.Error -> {
-            ErrorContent(state.errorMessage)
+            ErrorContent(uiState.errorMessage)
         }
         else -> Unit
     }
@@ -195,10 +183,12 @@ fun DataAnalysisContent(
     dashboardViewModel: ClinicianDashboardViewModel
 ) {
     val responses = dashboardViewModel.extractInsights(response)
-    Log.d("RESPONSES", "$responses")
 
-    LazyColumn {
-        itemsIndexed(responses) { _, (title, description) ->
+    Column(
+        modifier = Modifier.fillMaxWidth(0.9f),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        responses.forEach { (title, description) ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -208,17 +198,21 @@ fun DataAnalysisContent(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             ) {
                 Column(
-                    modifier = Modifier
-                        .padding(10.dp)
+                    modifier = Modifier.padding(10.dp)
                 ) {
                     Text(
                         text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = Color.Blue)) {
+                            withStyle(
+                                style = SpanStyle(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
                                 append(title)
                             }
                             append(" $description")
                         },
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         lineHeight = 20.sp,
                         modifier = Modifier.padding(bottom = 8.dp),
                         color = MaterialTheme.colorScheme.onSurface

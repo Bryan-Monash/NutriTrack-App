@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,43 +46,53 @@ fun ClinicianLoginScreen(
     val key = remember { mutableStateOf("") }
     var keyVisible by remember { mutableStateOf(false) }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(R.string.clinicianLogin),
-            modifier = Modifier.padding(bottom = 24.dp),
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            value = key.value,
-            onValueChange = { key.value = it },
-            label = { Text(stringResource(R.string.clinicianKey), fontSize = 14.sp) },
-            visualTransformation = if (keyVisible) VisualTransformation.None
-            else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (keyVisible) Icons.Default.Visibility
-                else Icons.Default.VisibilityOff
-                val description = if (keyVisible) "Hide password"
-                else "Show password"
-                IconButton(
-                    onClick = { keyVisible = !keyVisible }
-                ) {
-                    Icon(imageVector = image, contentDescription = description)
+        item {
+            Text(
+                text = stringResource(R.string.clinicianLogin),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        item {
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .padding(vertical = 12.dp),
+                value = key.value,
+                onValueChange = { key.value = it },
+                label = { Text(stringResource(R.string.clinicianKey), fontSize = 14.sp) },
+                visualTransformation = if (keyVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (keyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    val description = if (keyVisible) "Hide password" else "Show password"
+                    IconButton(onClick = { keyVisible = !keyVisible }) {
+                        Icon(imageVector = image, contentDescription = description)
+                    }
                 }
+            )
+        }
+
+        item {
+            Button(
+                onClick = clinicianLoginViewModel.validateKey(key.value, context, navController),
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .padding(vertical = 12.dp)
+            ) {
+                Text("Clinician Login")
             }
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = clinicianLoginViewModel.validateKey(key.value, context,navController),
-            modifier = Modifier.fillMaxWidth(0.85f)
-        ) {
-            Text("Clinician Login")
         }
     }
 }
+

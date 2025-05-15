@@ -4,6 +4,8 @@ import android.app.TimePickerDialog
 import android.content.Context
 import android.icu.util.Calendar
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,11 +16,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material3.AlertDialog
@@ -45,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,7 +64,6 @@ import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.R
 import com.example.bryan_34309861_a3_app.data.util.UiState
 import com.example.bryan_34309861_a3_app.ui.composables.ErrorContent
-import com.example.bryan_34309861_a3_app.ui.composables.Loading
 
 data class PersonaInfo(val imageRes: Int, val descriptionRes: Int, val name: String)
 
@@ -75,19 +79,19 @@ fun QuestionnaireScreen(
     val uiState = questionnaireViewModel.uiState
         .observeAsState()
 
-    when (val state = uiState.value) {
-        is UiState.Loading -> {
-            Loading()
-        }
-
-        is UiState.Success -> {
-            QuestionnaireScreenContent(navController, questionnaireViewModel, context)
-        }
-        is UiState.Error -> {
-            ErrorContent(state.errorMessage)
-        }
-        else -> Unit
-    }
+//    when (val state = uiState.value) {
+//        is UiState.Loading -> {
+//            QuestionnaireScreenContent(navController, questionnaireViewModel, context)
+//        }
+//        is UiState.Success -> {
+//            QuestionnaireScreenContent(navController, questionnaireViewModel, context)
+//        }
+//        is UiState.Error -> {
+//            ErrorContent(state.errorMessage)
+//        }
+//        else -> Unit
+//    }
+    QuestionnaireScreenContent(navController, questionnaireViewModel, context)
 }
 
 @Composable
@@ -96,44 +100,46 @@ fun QuestionnaireScreenContent(
     questionnaireViewModel: QuestionnaireViewModel,
     context: Context
 ) {
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 8.dp, start = 16.dp, end = 16.dp),
-        verticalArrangement = Arrangement.Top,
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.25f),
-            verticalArrangement = Arrangement.Top
-        ) {
+        item {
             CheckBoxQuestion(questionnaireViewModel)
         }
-        HorizontalDivider()
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.3f),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
+
+        item {
+            HorizontalDivider()
+        }
+
+        item {
             Persona(questionnaireViewModel)
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        HorizontalDivider()
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.25f),
-            verticalArrangement = Arrangement.Top
-        ) {
+
+        item {
+            HorizontalDivider()
+        }
+
+        item {
             Timings(questionnaireViewModel)
         }
-        Button(
-            onClick = questionnaireViewModel.validateQuestionnaire(context, navController   )
-        ) {
-            Text("Save Preferences")
+
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Button(
+                    onClick = questionnaireViewModel.validateQuestionnaire(context, navController)
+                ) {
+                    Text("Save Preferences")
+                }
+            }
         }
     }
 }
@@ -142,42 +148,47 @@ fun QuestionnaireScreenContent(
 fun CheckBoxQuestion(
     questionnaireViewModel: QuestionnaireViewModel,
 ) {
-    val categories = listOf("Fruits", "Vegetables", "Grains", "Red Meat", "Seafood",
-        "Poultry", "Fish", "Eggs", "Nuts/Seeds")
+    val categories = listOf(
+        "Fruits", "Vegetables", "Grains", "Red Meat", "Seafood",
+        "Poultry", "Fish", "Eggs", "Nuts/Seeds"
+    )
 
     val checkboxStates = questionnaireViewModel.foodIntake
-        .observeAsState().value?.checkboxes?: List(9) { false }
+        .observeAsState().value?.checkboxes ?: List(categories.size) { false }
 
-    Text(stringResource(R.string.foodIntake), fontWeight = FontWeight.Bold)
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+    Text(
+        text = stringResource(R.string.foodIntake),
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        for (col in 0 until 3) {
-            Column(
-                modifier = Modifier.padding(end = 16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.Start
+        categories.chunked(3).forEach { rowItems ->
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                for (row in 0 until 3) {
-                    val index = row * 3 + col
+                rowItems.forEachIndexed { i, item ->
+                    val index = categories.indexOf(item)
                     Row(
-                        modifier = Modifier.padding(bottom = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
                     ) {
                         Checkbox(
-                            checked = checkboxStates.get(index) ?: false,
+                            checked = checkboxStates[index],
                             onCheckedChange = {
                                 questionnaireViewModel.updateCheckbox(
-                                    checkboxes = checkboxStates,
                                     index = index
                                 )
                             }
                         )
                         Text(
-                            text = categories[index],
-                            modifier = Modifier.padding(start = 4.dp),
-                            fontSize = 12.sp
+                            text = item,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(start = 4.dp)
                         )
                     }
                 }
@@ -185,6 +196,7 @@ fun CheckBoxQuestion(
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -211,40 +223,38 @@ fun Persona(
         lineHeight = 18.sp
     )
 
-    Row(modifier = Modifier.fillMaxWidth()) {
-        for (col in 0 until 3) {
-            Column(
-                modifier = Modifier.padding(end = 16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.Start
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        personaList.chunked(3).forEach { rowItems ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                for (row in 0 until 2) {
-                    // index for persona from left to right and up to down
-                    val index = row * 3 + col
-                    Row(
-                        modifier = Modifier.padding(bottom = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                rowItems.forEach { name ->
+                    val index = personaList.indexOf(name)
+                    Button(
+                        onClick = { modalStates[index] = true },
+                        modifier = Modifier
+                            .weight(1f) ,
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
                     ) {
-                        Button(
-                            onClick = { modalStates[index] = true },
-                            modifier = Modifier
-                                .padding(2.dp),
-                            shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = personaList[index],
-                                fontSize = 11.sp,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1
-                            )
-                        }
-                        ShowModal(modalStates, index)
+                        Text(
+                            text = name,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            softWrap = true,
+                            maxLines = 2,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
+                    ShowModal(modalStates, index)
                 }
             }
         }
-
     }
     Spacer(modifier = Modifier.height(8.dp))
     Text(
@@ -356,11 +366,11 @@ fun Timings(
         fontSize = 20.sp
     )
     InputRow(stringResource(R.string.eatTime), questionnaireViewModel, "eat")
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     InputRow(stringResource(R.string.sleepTime), questionnaireViewModel,"sleep")
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     InputRow(stringResource(R.string.wakeUpTime), questionnaireViewModel, "wakeUp")
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(10.dp))
 }
 
 @Composable
@@ -370,18 +380,18 @@ fun InputRow(
     timeType: String
 ) {
     val aFoodIntake = questionnaireViewModel.foodIntake
-    val initialTime =
-        when (timeType) {
-            "eat" -> aFoodIntake.value?.eatTime
-            "sleep" -> aFoodIntake.value?.sleepTime
-            "wakeUp" -> aFoodIntake.value?.wakeUpTime
-            else -> error("No Timing found")
-        }
+        .observeAsState()
+    val initialTime = when (timeType) {
+        "eat" -> aFoodIntake.value?.eatTime?: ""
+        "sleep" -> aFoodIntake.value?.sleepTime?: ""
+        "wakeUp" -> aFoodIntake.value?.wakeUpTime?: ""
+        else -> "No Timing found"
+    }
 
-    val activityTime = remember { mutableStateOf(initialTime) }
+    val timeValue = remember(initialTime) { mutableStateOf(initialTime) }
 
     val mTimePickerDialog =
-        TimePickerFun(activityTime, timeType, questionnaireViewModel)
+        TimePickerFun(timeValue, timeType, questionnaireViewModel)
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -392,45 +402,51 @@ fun InputRow(
             Text(
                 text = question,
                 fontSize = 12.sp,
-                modifier = Modifier.width(280.dp)
+                modifier = Modifier.weight(0.7f)
             )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .weight(1f)
+                    .weight(0.3f)
                     .clickable { mTimePickerDialog.show() }
             ) {
-                OutlinedTextField(
-                    value = initialTime ?: "",
-                    onValueChange = { },
-                    textStyle = TextStyle(fontSize = 13.sp),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number
-                    ),
-                    singleLine = true,
-                    enabled = false,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    leadingIcon = {
-                        Icon(
-                            Icons.Filled.AccessTime,
-                            "time",
-                            Modifier
-                                .clickable {
-                                    mTimePickerDialog.show()
-                                }
-                                .size(16.dp)
-                        )
-                    },
-                    colors = OutlinedTextFieldDefaults.colors().copy(
-                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                        disabledIndicatorColor = MaterialTheme.colorScheme.outline,
-                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant)
+//                OutlinedTextField(
+//                    value = timeValue.value,
+//                    onValueChange = { },
+//                    textStyle = TextStyle(fontSize = 14.sp, textAlign = TextAlign.Center),
+//                    keyboardOptions = KeyboardOptions.Default.copy(
+//                        keyboardType = KeyboardType.Number
+//                    ),
+//                    singleLine = true,
+//                    enabled = false,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(48.dp),
+//                    leadingIcon = {
+//                        Icon(
+//                            Icons.Filled.AccessTime,
+//                            "time",
+//                            Modifier
+//                                .clickable {
+//                                    mTimePickerDialog.show()
+//                                }
+//                                .size(16.dp)
+//                        )
+//                    },
+//                    colors = OutlinedTextFieldDefaults.colors().copy(
+//                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+//                        disabledIndicatorColor = MaterialTheme.colorScheme.outline,
+//                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+//                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+//                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+//                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant)
+//                )
+                ReadOnlyTimeBox(
+                    timeText = timeValue.value,
+                    onIconClick = {
+                        mTimePickerDialog.show()
+                    }
                 )
             }
         }
@@ -439,7 +455,7 @@ fun InputRow(
 
 @Composable
 fun TimePickerFun(
-    mTime: MutableState<String?>,
+    mTime: MutableState<String>,
     timeType: String,
     questionnaireViewModel: QuestionnaireViewModel,
 ): TimePickerDialog {
@@ -458,8 +474,52 @@ fun TimePickerFun(
             mTime.value = String.format("%02d:%02d", mHour, mMinute)
             questionnaireViewModel.updateTime(
                 timeType = timeType,
-                time = mTime.value!!
+                time = mTime.value
             )
         }, mHour, mMinute, false
     )
+}
+
+@Composable
+fun ReadOnlyTimeBox(
+    timeText: String,
+    onIconClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable { onIconClick() }
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.AccessTime,
+                contentDescription = "Pick time",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = timeText,
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
 }
