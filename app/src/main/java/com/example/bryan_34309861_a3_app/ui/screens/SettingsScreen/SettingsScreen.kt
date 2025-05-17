@@ -127,6 +127,7 @@ fun SettingsScreen(
                     .clickable {
                         isDark = !isDark
                         onToggleDarkMode(isDark)
+                        settingsViewModel.toggleDarkMode(context, isDark)
                     }
                     .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -150,6 +151,7 @@ fun SettingsScreen(
                     onCheckedChange = {
                         isDark = it
                         onToggleDarkMode(it)
+                        settingsViewModel.toggleDarkMode(context, isDark)
                     },
                     colors = SwitchDefaults.colors(checkedThumbColor = Color.Black)
                 )

@@ -86,7 +86,9 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
             val currentRoute by navController.currentBackStackEntryAsState()
-            var darkModeEnabled by rememberSaveable { mutableStateOf(false) }
+            val darkMode = context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
+                .getBoolean("darkMode", false)
+            var darkModeEnabled by rememberSaveable { mutableStateOf(darkMode) }
 
             Bryan_34309861_A3_appTheme(darkTheme = darkModeEnabled) {
                 Scaffold(

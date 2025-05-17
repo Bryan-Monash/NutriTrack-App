@@ -1,6 +1,7 @@
 package com.example.bryan_34309861_a3_app.ui.screens.RegisterScreen
 
 import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -38,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -211,14 +214,27 @@ fun RegisterScreen(
             Text("Register")
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = {
-                navController.navigate(AppDashboardScreen.PatientLogin.route)
-            },
+        Row(
             modifier = Modifier
-                .fillMaxWidth(0.85f)
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text("Login")
+            Text(
+                text = "Already have an account?",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Login",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline
+                ),
+                modifier = Modifier.clickable {
+                    navController.navigate(AppDashboardScreen.PatientLogin.route)
+                }
+            )
         }
     }
 }

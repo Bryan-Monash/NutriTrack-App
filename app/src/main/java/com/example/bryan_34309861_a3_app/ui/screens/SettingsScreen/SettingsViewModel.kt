@@ -95,6 +95,20 @@ class SettingsViewModel(context: Context): ViewModel() {
         }
     }
 
+    /**
+     * This function updates the shared preferences to retain the mode the user used
+     * before re-running the app
+     *
+     * @param context The current context of the application
+     * @param isDark The current mode of the screen theme
+     */
+    fun toggleDarkMode(context: Context, isDark: Boolean) {
+        context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("darkMode", isDark)
+            .apply()
+    }
+
     // Factory class for creating instances of HomeViewModel
     class SettingViewModelFactory(context: Context) : ViewModelProvider.Factory {
         private val context = context.applicationContext

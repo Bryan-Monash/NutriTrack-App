@@ -1,6 +1,7 @@
 package com.example.bryan_34309861_a3_app.ui.screens.PatientLoginScreen
 
 import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
@@ -35,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -158,13 +161,26 @@ fun PatientLoginScreen(
             Text("Continue")
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = {
-                navController.navigate(AppDashboardScreen.Register.route)
-            },
-            modifier = Modifier.fillMaxWidth(0.85f)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text("Register")
+            Text(
+                text = "Don't have an account?",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Sign up",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable {
+                    navController.navigate(AppDashboardScreen.Register.route)
+                }
+            )
         }
     }
 }
