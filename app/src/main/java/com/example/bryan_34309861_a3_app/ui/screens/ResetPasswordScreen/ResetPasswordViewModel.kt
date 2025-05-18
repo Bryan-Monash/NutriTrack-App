@@ -87,18 +87,26 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
         }
     }
 
+    fun verifyPatient(phoneNumber: String, context: Context): Boolean {
+        return if (_thePatient.value?.phoneNumber != phoneNumber) {
+            Toast.makeText(context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
+            false
+        } else {
+            Toast.makeText(context, "Successfully verified", Toast.LENGTH_SHORT).show()
+            true
+        }
+    }
+
     /**
      * Returns a lambda function that resets the patient's password based on provided input validation.
      *
      * This function performs the following checks before updating the password:
-     * - Verifies if the given phone number matches the current patient's phone number.
      * - Checks if the new password and confirmation password match.
      * - If both checks pass, it hashes the new password using BCrypt and updates it in the database.
      *
      * Appropriate Toast messages are shown for each validation outcome.
      * On successful password reset, it navigates to the Patient Login screen.
      *
-     * @param phoneNumber The phone number entered by the user for verification.
      * @param newPassword The new password to set.
      * @param newConfirmPassword Confirmation of the new password.
      * @param context The Android context used to show Toast messages.
@@ -107,7 +115,6 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
      * @return A lambda function to be triggered (e.g., on a button click) that handles the password reset process.
      */
     fun resetPassword(
-        phoneNumber: String,
         newPassword: String,
         newConfirmPassword: String,
         context: Context,
@@ -115,10 +122,9 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
     ): () -> Unit {
         return {
             when {
-                _thePatient.value?.phoneNumber != phoneNumber -> {
-                    Toast.makeText(context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
+                newPassword.isEmpty() || newConfirmPassword.isEmpty() -> {
+                    Toast.makeText(context, "Please fill in your new password", Toast.LENGTH_SHORT).show()
                 }
-
                 newPassword != newConfirmPassword -> {
                     Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
                 }

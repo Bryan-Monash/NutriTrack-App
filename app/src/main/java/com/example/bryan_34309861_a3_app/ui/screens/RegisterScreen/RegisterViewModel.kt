@@ -138,6 +138,10 @@ class RegisterViewModel(context: Context): ViewModel() {
                     Toast.makeText(context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
                 }
 
+                password.isEmpty() -> {
+                    Toast.makeText(context, "Password field cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+
                 password != confirmPassword -> {
                     Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
                 }

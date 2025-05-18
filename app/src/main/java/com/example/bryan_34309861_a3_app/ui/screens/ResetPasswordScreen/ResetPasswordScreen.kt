@@ -58,15 +58,13 @@ fun ResetPasswordScreen(
 
     var patientId by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var newConfirmPassword by remember { mutableStateOf("") }
 
     val allRegisteredPatients = viewModel.getAllRegisteredPatient()
 
     var expanded by remember { mutableStateOf(false) }
-    var newPasswordVisible by remember { mutableStateOf(false) }
-    var newConfirmPasswordVisible by remember { mutableStateOf(false) }
     val verticalScroll = rememberScrollState()
+
+    var isVerified by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -96,13 +94,17 @@ fun ResetPasswordScreen(
         )
 
         ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded },
+            expanded = if (!isVerified) expanded else false, // prevents it from expanding
+            onExpandedChange = {
+                if (!isVerified) {
+                    expanded = !expanded
+                }
+            },
             modifier = Modifier.fillMaxWidth(0.85f)
         ) {
             OutlinedTextField(
                 value = patientId,
-                onValueChange = {  },
+                onValueChange = { },
                 label = { Text(stringResource(R.string.patientIdLabel), fontSize = 14.sp) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -111,23 +113,26 @@ fun ResetPasswordScreen(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 },
                 readOnly = true,
+                enabled = !isVerified,
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
             )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = {
-                    expanded = false
-                },
-            ) {
-                allRegisteredPatients.forEach { patient ->
-                    DropdownMenuItem(
-                        text = { Text(patient.patientId) },
-                        onClick = {
-                            patientId = patient.patientId
-                            viewModel.getPatientById(patientId)
-                            expanded = !expanded
-                        }
-                    )
+            if (!isVerified) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {
+                        expanded = false
+                    },
+                ) {
+                    allRegisteredPatients.forEach { patient ->
+                        DropdownMenuItem(
+                            text = { Text(patient.patientId) },
+                            onClick = {
+                                patientId = patient.patientId
+                                viewModel.getPatientById(patientId)
+                                expanded = !expanded
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -136,92 +141,121 @@ fun ResetPasswordScreen(
             modifier = Modifier.fillMaxWidth(0.85f),
             value = phoneNumber,
             onValueChange = { phoneNumber = it },
+            enabled = !isVerified,
             label = { Text("Phone Number", fontSize = 14.sp) },
         )
         Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            value = newPassword,
-            onValueChange = { newPassword = it },
-            label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
-            visualTransformation = if (newPasswordVisible) VisualTransformation.None
-            else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (newPasswordVisible) Icons.Default.Visibility
-                else Icons.Default.VisibilityOff
-                val description = if (newPasswordVisible) "Hide password"
-                else "Show password"
-                IconButton(
-                    onClick = { newPasswordVisible = !newPasswordVisible }
-                ) {
-                    Icon(imageVector = image, contentDescription = description)
+
+        if (!isVerified) {
+            Button(
+                onClick = {
+                    val verified = viewModel.verifyPatient(phoneNumber, context)
+                    isVerified = verified
                 }
+            ) {
+                Text("Verify Identity")
             }
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            value = newConfirmPassword,
-            onValueChange = { newConfirmPassword = it },
-            label = { Text("Confirm Password", fontSize = 14.sp) },
-            visualTransformation = if (newConfirmPasswordVisible) VisualTransformation.None
-            else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (newConfirmPasswordVisible) Icons.Default.Visibility
-                else Icons.Default.VisibilityOff
-                val description = if (newConfirmPasswordVisible) "Hide password"
-                else "Show password"
-                IconButton(
-                    onClick = { newConfirmPasswordVisible = !newConfirmPasswordVisible }
-                ) {
-                    Icon(imageVector = image, contentDescription = description)
-                }
+        }
+
+        if (isVerified) {
+            ResetPasswordField(viewModel, navController, context)
+        }
+    }
+}
+
+@Composable
+fun ResetPasswordField(
+    viewModel: ResetPasswordViewModel,
+    navController: NavHostController,
+    context: Context
+) {
+    var newPassword by remember { mutableStateOf("") }
+    var newConfirmPassword by remember { mutableStateOf("") }
+
+    var newPasswordVisible by remember { mutableStateOf(false) }
+    var newConfirmPasswordVisible by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(0.85f),
+        value = newPassword,
+        onValueChange = { newPassword = it },
+        label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
+        visualTransformation = if (newPasswordVisible) VisualTransformation.None
+        else PasswordVisualTransformation(),
+        trailingIcon = {
+            val image = if (newPasswordVisible) Icons.Default.Visibility
+            else Icons.Default.VisibilityOff
+            val description = if (newPasswordVisible) "Hide password"
+            else "Show password"
+            IconButton(
+                onClick = { newPasswordVisible = !newPasswordVisible }
+            ) {
+                Icon(imageVector = image, contentDescription = description)
             }
-        )
-        Spacer(modifier = Modifier.height(12.dp))
+        }
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(0.85f),
+        value = newConfirmPassword,
+        onValueChange = { newConfirmPassword = it },
+        label = { Text("Confirm Password", fontSize = 14.sp) },
+        visualTransformation = if (newConfirmPasswordVisible) VisualTransformation.None
+        else PasswordVisualTransformation(),
+        trailingIcon = {
+            val image = if (newConfirmPasswordVisible) Icons.Default.Visibility
+            else Icons.Default.VisibilityOff
+            val description = if (newConfirmPasswordVisible) "Hide password"
+            else "Show password"
+            IconButton(
+                onClick = { newConfirmPasswordVisible = !newConfirmPasswordVisible }
+            ) {
+                Icon(imageVector = image, contentDescription = description)
+            }
+        }
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    Text(
+        stringResource(R.string.loginDisclaimer),
+        textAlign = TextAlign.Center,
+        fontSize = 12.sp,
+        lineHeight = 20.sp
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    Button(
+        onClick = viewModel.resetPassword(
+            newPassword,
+            newConfirmPassword,
+            context,
+            navController
+        ),
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth(0.85f)
+    ) {
+        Text("Reset Password")
+    }
+    Spacer(modifier = Modifier.height(12.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
         Text(
-            stringResource(R.string.loginDisclaimer),
-            textAlign = TextAlign.Center,
-            fontSize = 12.sp,
-            lineHeight = 20.sp
+            text = "Already have an account?",
+            style = MaterialTheme.typography.bodyMedium
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = viewModel.resetPassword(
-                phoneNumber,
-                newPassword,
-                newConfirmPassword,
-                context,
-                navController
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "Login",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline
             ),
-            modifier = Modifier
-                .padding(top = 24.dp)
-                .fillMaxWidth(0.85f)
-        ) {
-            Text("Reset Password")
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Already have an account?",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Login",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline
-                ),
-                modifier = Modifier.clickable {
-                    navController.navigate(AppDashboardScreen.PatientLogin.route)
-                }
-            )
-        }
+            modifier = Modifier.clickable {
+                navController.navigate(AppDashboardScreen.PatientLogin.route)
+            }
+        )
     }
 }
