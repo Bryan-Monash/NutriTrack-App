@@ -15,12 +15,28 @@ import com.example.bryan_34309861_a3_app.data.repository.PatientRepository
 import kotlinx.coroutines.launch
 
 class ResetPasswordViewModel(context: Context) : ViewModel() {
+    /**
+     * Repository instance for handling all data operations.
+     * This is the single point of contact for the ViewModel to interact with data sources.
+     */
     private val repository = PatientRepository(context)
 
+    /**
+     * Private mutable live data that stores the list of all patients
+     * Using LiveData provides a way to observe changes to the data in real time
+     */
     private val _allPatients = MutableLiveData<List<Patient>>(emptyList())
 
+    /**
+     * Private mutable live data that stores the patient
+     * Using LiveData provides a way to observe changes to the data in real time
+     */
     private val _thePatient = MutableLiveData<Patient>()
 
+    /**
+     * Initialize the ViewModel by loading the list of all patients from the repository
+     * This ensures data is available as soon as the UI starts observing.
+     */
     init {
         loadPatients()
     }
@@ -59,6 +75,11 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
         return _allPatients.value?.filter { it.name.isNotEmpty() }?: emptyList()
     }
 
+    /**
+     * Updates the patient's password
+     *
+     * @param password The password that the patient wants to set
+     */
     private fun updatePatientPassword(password: String) {
         viewModelScope.launch {
             repository.updatePatientDetails(_thePatient.value!!, _thePatient.value!!.name, password)
@@ -66,6 +87,25 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
         }
     }
 
+    /**
+     * Returns a lambda function that resets the patient's password based on provided input validation.
+     *
+     * This function performs the following checks before updating the password:
+     * - Verifies if the given phone number matches the current patient's phone number.
+     * - Checks if the new password and confirmation password match.
+     * - If both checks pass, it hashes the new password using BCrypt and updates it in the database.
+     *
+     * Appropriate Toast messages are shown for each validation outcome.
+     * On successful password reset, it navigates to the Patient Login screen.
+     *
+     * @param phoneNumber The phone number entered by the user for verification.
+     * @param newPassword The new password to set.
+     * @param newConfirmPassword Confirmation of the new password.
+     * @param context The Android context used to show Toast messages.
+     * @param navController The navigation controller used to navigate after password change.
+     *
+     * @return A lambda function to be triggered (e.g., on a button click) that handles the password reset process.
+     */
     fun resetPassword(
         phoneNumber: String,
         newPassword: String,
@@ -94,6 +134,7 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
         }
     }
 
+    // Factory class for creating instances of ResetPasswordViewModel
     class ResetPasswordViewModelFactory(context: Context) : ViewModelProvider.Factory {
         private val context = context.applicationContext
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
