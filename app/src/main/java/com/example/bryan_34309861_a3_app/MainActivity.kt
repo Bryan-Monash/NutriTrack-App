@@ -212,7 +212,7 @@ fun InitialLaunchScreen(navController: NavHostController, context: Context) {
                 popUpTo(AppDashboardScreen.Launch.route) { inclusive = true }
             }
         } else {
-            navController.navigate(AppDashboardScreen.Home.route) {
+            navController.navigate(AppDashboardScreen.Questionnaire.route) {
                 popUpTo(AppDashboardScreen.Launch.route) { inclusive = true }
             }
         }
