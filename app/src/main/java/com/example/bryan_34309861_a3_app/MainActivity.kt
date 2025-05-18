@@ -47,6 +47,7 @@ import com.example.bryan_34309861_a3_app.ui.screens.NutriCoachScreen.NutriCoachS
 import com.example.bryan_34309861_a3_app.ui.screens.PatientLoginScreen.PatientLoginScreen
 import com.example.bryan_34309861_a3_app.ui.screens.QuestionnaireScreen.QuestionnaireScreen
 import com.example.bryan_34309861_a3_app.ui.screens.RegisterScreen.RegisterScreen
+import com.example.bryan_34309861_a3_app.ui.screens.ResetPasswordScreen.ResetPasswordScreen
 import com.example.bryan_34309861_a3_app.ui.screens.SettingsScreen.SettingsScreen
 import com.example.bryan_34309861_a3_app.ui.screens.WelcomeScreen.WelcomeScreen
 import com.example.bryan_34309861_a3_app.ui.theme.Bryan_34309861_A3_appTheme
@@ -58,6 +59,7 @@ sealed class AppDashboardScreen(val route: String) {
     object Welcome : AppDashboardScreen("Welcome")
     object PatientLogin : AppDashboardScreen("Patient Login")
     object Register : AppDashboardScreen("Register")
+    object ResetPassword : AppDashboardScreen("Reset Password")
     object Questionnaire : AppDashboardScreen("Questionnaire")
     object Home : AppDashboardScreen("Home")
     object Insight : AppDashboardScreen("Insight")
@@ -171,6 +173,9 @@ fun NavHostApp(
         }
         composable(AppDashboardScreen.Register.route) {
             RegisterScreen(navController, context)
+        }
+        composable(AppDashboardScreen.ResetPassword.route) {
+            ResetPasswordScreen(navController, context)
         }
         composable(AppDashboardScreen.Questionnaire.route) {
             QuestionnaireScreen(navController, context)

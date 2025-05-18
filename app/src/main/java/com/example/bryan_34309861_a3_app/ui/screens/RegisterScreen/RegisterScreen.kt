@@ -65,10 +65,6 @@ fun RegisterScreen(
 
     val allUnregisteredPatients = registerViewModel.getAllUnregisteredPatient()
 
-    val thePatient = registerViewModel.getPatientById(patientId)
-        .observeAsState()
-
-    val _context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
@@ -130,6 +126,7 @@ fun RegisterScreen(
                         text = { Text(patient.patientId) },
                         onClick = {
                             patientId = patient.patientId
+                            registerViewModel.getPatientById(patientId)
                             expanded = !expanded
                         }
                     )

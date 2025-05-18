@@ -146,6 +146,7 @@ class RegisterViewModel(context: Context): ViewModel() {
                     val hashedPassword = BCrypt.withDefaults()
                         .hashToString(12, password.toCharArray())
                     updatePatientDetails(patientName, hashedPassword)
+                    Toast.makeText(context, "Patient successfully registered", Toast.LENGTH_SHORT).show()
                     navController.navigate(AppDashboardScreen.PatientLogin.route)
                 }
             }

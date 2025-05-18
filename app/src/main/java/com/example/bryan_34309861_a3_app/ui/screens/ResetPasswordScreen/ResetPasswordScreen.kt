@@ -1,4 +1,4 @@
-package com.example.bryan_34309861_a3_app.ui.screens.PatientLoginScreen
+package com.example.bryan_34309861_a3_app.ui.screens.ResetPasswordScreen
 
 import android.content.Context
 import androidx.compose.foundation.clickable
@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
@@ -27,7 +29,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,25 +48,33 @@ import com.example.bryan_34309861_a3_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PatientLoginScreen(
+fun ResetPasswordScreen(
     navController: NavHostController,
     context: Context
 ) {
-    val patientLoginViewModel: PatientLoginViewModel = viewModel(
-        factory = PatientLoginViewModel.PatientLoginViewModelFactory(context)
+    val viewModel: ResetPasswordViewModel = viewModel(
+        factory = ResetPasswordViewModel.ResetPasswordViewModelFactory(context)
     )
 
-    val patientId = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val allRegisteredPatients = patientLoginViewModel.getAllRegisteredPatient()
+    var patientId by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var newConfirmPassword by remember { mutableStateOf("") }
+
+    val allRegisteredPatients = viewModel.getAllRegisteredPatient()
+
     var expanded by remember { mutableStateOf(false) }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var newPasswordVisible by remember { mutableStateOf(false) }
+    var newConfirmPasswordVisible by remember { mutableStateOf(false) }
+    val verticalScroll = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
+            .padding(16.dp)
+            .verticalScroll(verticalScroll),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
     ) {
         Row(
             modifier = Modifier.fillMaxWidth()
@@ -73,7 +82,7 @@ fun PatientLoginScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            IconButton(onClick = { navController.navigate(AppDashboardScreen.Welcome.route) }) {
+            IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back"
@@ -81,7 +90,7 @@ fun PatientLoginScreen(
             }
         }
         Text(
-            text = stringResource(R.string.patientLogin),
+            text = "Reset Password",
             modifier = Modifier.padding(bottom = 24.dp),
             style = MaterialTheme.typography.headlineMedium
         )
@@ -92,7 +101,7 @@ fun PatientLoginScreen(
             modifier = Modifier.fillMaxWidth(0.85f)
         ) {
             OutlinedTextField(
-                value = patientId.value,
+                value = patientId,
                 onValueChange = {  },
                 label = { Text(stringResource(R.string.patientIdLabel), fontSize = 14.sp) },
                 modifier = Modifier
@@ -114,9 +123,9 @@ fun PatientLoginScreen(
                     DropdownMenuItem(
                         text = { Text(patient.patientId) },
                         onClick = {
-                            patientId.value = patient.patientId
+                            patientId = patient.patientId
+                            viewModel.getPatientById(patientId)
                             expanded = !expanded
-                            patientLoginViewModel.getPatientById(patientId.value)
                         }
                     )
                 }
@@ -125,40 +134,71 @@ fun PatientLoginScreen(
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = password.value,
-            onValueChange = { password.value = it },
+            value = phoneNumber,
+            onValueChange = { phoneNumber = it },
+            label = { Text("Phone Number", fontSize = 14.sp) },
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(0.85f),
+            value = newPassword,
+            onValueChange = { newPassword = it },
             label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
-            visualTransformation = if (passwordVisible) VisualTransformation.None
+            visualTransformation = if (newPasswordVisible) VisualTransformation.None
             else PasswordVisualTransformation(),
             trailingIcon = {
-                val image = if (passwordVisible) Icons.Default.Visibility
+                val image = if (newPasswordVisible) Icons.Default.Visibility
                 else Icons.Default.VisibilityOff
-                val description = if (passwordVisible) "Hide password"
+                val description = if (newPasswordVisible) "Hide password"
                 else "Show password"
                 IconButton(
-                    onClick = { passwordVisible = !passwordVisible }
+                    onClick = { newPasswordVisible = !newPasswordVisible }
                 ) {
                     Icon(imageVector = image, contentDescription = description)
                 }
             }
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Text(stringResource(R.string.loginDisclaimer),
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(0.85f),
+            value = newConfirmPassword,
+            onValueChange = { newConfirmPassword = it },
+            label = { Text("Confirm Password", fontSize = 14.sp) },
+            visualTransformation = if (newConfirmPasswordVisible) VisualTransformation.None
+            else PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (newConfirmPasswordVisible) Icons.Default.Visibility
+                else Icons.Default.VisibilityOff
+                val description = if (newConfirmPasswordVisible) "Hide password"
+                else "Show password"
+                IconButton(
+                    onClick = { newConfirmPasswordVisible = !newConfirmPasswordVisible }
+                ) {
+                    Icon(imageVector = image, contentDescription = description)
+                }
+            }
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            stringResource(R.string.loginDisclaimer),
             textAlign = TextAlign.Center,
             fontSize = 12.sp,
             lineHeight = 20.sp
         )
         Spacer(modifier = Modifier.height(12.dp))
         Button(
-            onClick = patientLoginViewModel.isAuthorized(
-                patientId.value,
-                password.value,
+            onClick = viewModel.resetPassword(
+                phoneNumber,
+                newPassword,
+                newConfirmPassword,
                 context,
                 navController
             ),
-            modifier = Modifier.padding(top = 24.dp).fillMaxWidth(0.85f)
+            modifier = Modifier
+                .padding(top = 24.dp)
+                .fillMaxWidth(0.85f)
         ) {
-            Text("Continue")
+            Text("Reset Password")
         }
         Spacer(modifier = Modifier.height(12.dp))
         Row(
@@ -168,40 +208,18 @@ fun PatientLoginScreen(
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Don't have an account?",
+                text = "Already have an account?",
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "Sign up",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                textDecoration = TextDecoration.Underline,
+                text = "Login",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline
+                ),
                 modifier = Modifier.clickable {
-                    navController.navigate(AppDashboardScreen.Register.route)
-                }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Forget your password?",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Reset password",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable {
-                    navController.navigate(AppDashboardScreen.ResetPassword.route)
+                    navController.navigate(AppDashboardScreen.PatientLogin.route)
                 }
             )
         }
