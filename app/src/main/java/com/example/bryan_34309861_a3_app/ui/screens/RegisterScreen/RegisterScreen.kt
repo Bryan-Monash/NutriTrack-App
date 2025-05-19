@@ -114,6 +114,7 @@ fun RegisterScreen(
                 },
                 readOnly = true,
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                singleLine = true
             )
             ExposedDropdownMenu(
                 expanded = expanded,
@@ -139,6 +140,7 @@ fun RegisterScreen(
             value = patientName,
             onValueChange = { patientName = it },
             label = { Text("Enter Name", fontSize = 14.sp) },
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
@@ -146,6 +148,7 @@ fun RegisterScreen(
             value = phoneNumber,
             onValueChange = { phoneNumber = it },
             label = { Text("Phone Number", fontSize = 14.sp) },
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
@@ -165,7 +168,8 @@ fun RegisterScreen(
                 ) {
                     Icon(imageVector = image, contentDescription = description)
                 }
-            }
+            },
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
@@ -185,7 +189,8 @@ fun RegisterScreen(
                 ) {
                     Icon(imageVector = image, contentDescription = description)
                 }
-            }
+            },
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(

@@ -87,6 +87,12 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
         }
     }
 
+    /**
+     * Verifies if the patient provided information is same as in the database
+     *
+     * @param phoneNumber the phoneNumber of the patient
+     * @param context The Android context used to show Toast messages.
+     */
     fun verifyPatient(phoneNumber: String, context: Context): Boolean {
         return if (_thePatient.value?.phoneNumber != phoneNumber) {
             Toast.makeText(context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
@@ -95,6 +101,16 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
             Toast.makeText(context, "Successfully verified", Toast.LENGTH_SHORT).show()
             true
         }
+    }
+
+    /**
+     * Validates that the password does not contain any spaces or newline characters.
+     *
+     * @param password The password to validate.
+     * @return `true` if the password is valid, `false` otherwise.
+     */
+    private fun passwordValidator(password: String): Boolean {
+        return !password.contains(Regex("\\s")) // \s matches any whitespace (space, tab, newline, etc.)
     }
 
     /**
@@ -127,6 +143,10 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
                 }
                 newPassword != newConfirmPassword -> {
                     Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
+                }
+
+                !passwordValidator(newPassword) -> {
+                    Toast.makeText(context, "Password cannot contain any space", Toast.LENGTH_SHORT).show()
                 }
 
                 else -> {

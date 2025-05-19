@@ -79,7 +79,8 @@ fun ClinicianLoginScreen(
                     IconButton(onClick = { keyVisible = !keyVisible }) {
                         Icon(imageVector = image, contentDescription = description)
                     }
-                }
+                },
+                singleLine = true
             )
         }
 

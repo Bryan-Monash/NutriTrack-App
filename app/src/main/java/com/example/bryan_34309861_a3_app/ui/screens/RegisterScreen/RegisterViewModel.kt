@@ -142,6 +142,10 @@ class RegisterViewModel(context: Context): ViewModel() {
                     Toast.makeText(context, "Password field cannot be empty", Toast.LENGTH_SHORT).show()
                 }
 
+                !passwordValidator(password) -> {
+                    Toast.makeText(context, "Password cannot contain any spaces", Toast.LENGTH_SHORT).show()
+                }
+
                 password != confirmPassword -> {
                     Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
                 }
@@ -149,12 +153,37 @@ class RegisterViewModel(context: Context): ViewModel() {
                 else -> {
                     val hashedPassword = BCrypt.withDefaults()
                         .hashToString(12, password.toCharArray())
-                    updatePatientDetails(patientName, hashedPassword)
+                    val formattedName = formatName(patientName)
+                    updatePatientDetails(formattedName, hashedPassword)
                     Toast.makeText(context, "Patient successfully registered", Toast.LENGTH_SHORT).show()
                     navController.navigate(AppDashboardScreen.PatientLogin.route)
                 }
             }
         }
+    }
+
+    /**
+     * Formats a full name by removing extra spaces and ensuring
+     * only a single space separates each word.
+     *
+     * Example:
+     * "  John    Doe   Smith " -> "John Doe Smith"
+     *
+     * @param name The raw input name string.
+     * @return The formatted name.
+     */
+    private fun formatName(name: String): String {
+        return name.trim().split(Regex("\\s+")).joinToString(" ")
+    }
+
+    /**
+     * Validates that the password does not contain any spaces or newline characters.
+     *
+     * @param password The password to validate.
+     * @return `true` if the password is valid, `false` otherwise.
+     */
+    private fun passwordValidator(password: String): Boolean {
+        return !password.contains(Regex("\\s")) // \s matches any whitespace (space, tab, newline, etc.)
     }
 
     // Factory class for creating instances of RegisterViewModel

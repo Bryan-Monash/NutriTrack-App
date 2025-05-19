@@ -115,6 +115,7 @@ fun ResetPasswordScreen(
                 readOnly = true,
                 enabled = !isVerified,
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                singleLine = true
             )
             if (!isVerified) {
                 ExposedDropdownMenu(
@@ -143,6 +144,7 @@ fun ResetPasswordScreen(
             onValueChange = { phoneNumber = it },
             enabled = !isVerified,
             label = { Text("Phone Number", fontSize = 14.sp) },
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -192,7 +194,8 @@ fun ResetPasswordField(
             ) {
                 Icon(imageVector = image, contentDescription = description)
             }
-        }
+        },
+        singleLine = true
     )
     Spacer(modifier = Modifier.height(12.dp))
     OutlinedTextField(
@@ -212,7 +215,8 @@ fun ResetPasswordField(
             ) {
                 Icon(imageVector = image, contentDescription = description)
             }
-        }
+        },
+        singleLine = true
     )
     Spacer(modifier = Modifier.height(12.dp))
     Text(

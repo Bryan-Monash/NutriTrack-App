@@ -264,7 +264,6 @@ fun FruitDetailsTable(
                 color = MaterialTheme.colorScheme.error
             )
         }
-        else -> Unit
     }
 }
 

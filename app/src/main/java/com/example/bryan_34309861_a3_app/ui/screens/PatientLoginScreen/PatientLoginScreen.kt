@@ -103,6 +103,7 @@ fun PatientLoginScreen(
                 },
                 readOnly = true,
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                singleLine = true
             )
             ExposedDropdownMenu(
                 expanded = expanded,
@@ -140,7 +141,8 @@ fun PatientLoginScreen(
                 ) {
                     Icon(imageVector = image, contentDescription = description)
                 }
-            }
+            },
+            singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(stringResource(R.string.loginDisclaimer),
