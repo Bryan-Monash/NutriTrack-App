@@ -1,6 +1,8 @@
 package com.example.bryan_34309861_a3_app.data.viewModel
 
 import android.content.Context
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -62,6 +64,11 @@ class FruitApiViewModel(context: Context): ViewModel() {
         get() = _uiState
 
     /**
+     * Public mutable string that serves as the placeholder for fruitName
+     */
+    val fruitName = mutableStateOf("")
+
+    /**
      * Initialize the ViewModel by loading the current patient in session from the repository
      * This ensures data is available as soon as the UI starts observing.
      */
@@ -100,12 +107,12 @@ class FruitApiViewModel(context: Context): ViewModel() {
      *
      * @param fruitName The name of fruit wanted to be retrieved
      */
-    fun getFruitDetailByName(fruitName: String) {
+    fun getFruitDetailByName() {
         viewModelScope.launch {
             // Loading while running
             _uiState.value = UiState.Loading
             try {
-                val fruit = fruitApiRepository.getFruitDetailsByName(fruitName)
+                val fruit = fruitApiRepository.getFruitDetailsByName(fruitName.value)
                 // If the fruit exists
                 if (fruit.name != "") {
                     _apiFruit.value = fruit
@@ -136,6 +143,15 @@ class FruitApiViewModel(context: Context): ViewModel() {
             "Protein" to "${_apiFruit.value?.nutritions?.protein}",
             "Fat" to "${_apiFruit.value?.nutritions?.fat}"
         )
+    }
+
+    /**
+     * Decides whether the button is enabled or disabled
+     *
+     * @return A boolean value to determine it is enable or disabled
+     */
+    fun buttonEnable(): Boolean {
+        return fruitName.value.isNotEmpty() && _uiState.value !is UiState.Loading
     }
 
     // Factory class for creating instances of FruitApiViewModel

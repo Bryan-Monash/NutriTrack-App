@@ -2,6 +2,8 @@ package com.example.bryan_34309861_a3_app.ui.screens.QuestionnaireScreen
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -56,6 +58,17 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
         get() = _uiState
 
     /**
+     * Public mutable boolean that serves as the state of the dropdown menu
+     */
+    val personaExpanded = mutableStateOf(false)
+
+    /**
+     * Public mutable state list of array of 6 boolean values to keep track of
+     * the modal that is been shown
+     */
+    val personaModalStates = mutableStateListOf(*Array(6) { false })
+
+    /**
      * Initialize the ViewModel by loading the current patient's foodIntake from the repository
      * This ensures data is available as soon as the UI starts observing.
      */
@@ -79,6 +92,30 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
 //                _uiState.value = UiState.Error(" Error loading questionnaire: ${e.localizedMessage}")
             }
         }
+    }
+
+    /**
+     * Gets the list of food categories
+     *
+     * @return A list of String (food categories)
+     */
+    fun getFoodCategories(): List<String> {
+        return listOf(
+            "Fruits", "Vegetables", "Grains", "Red Meat", "Seafood",
+            "Poultry", "Fish", "Eggs", "Nuts/Seeds"
+        )
+    }
+
+    /**
+     * Gets the list of persona
+     *
+     * @return a list of String (persona)
+     */
+    fun getPersonaList(): List<String> {
+        return listOf(
+            "Health Devotee", "Mindful Eater", "Wellness Striver",
+            "Balance Seeker", "Health Procrastinator", "Food Carefree"
+        )
     }
 
     /**
@@ -142,10 +179,6 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      * @param context The context used for displaying Toast messages.
      * @param navController The NavHostController used for screen navigation upon successful submission.
      * @return A lambda function that should be invoked to perform the validation and possibly navigation.
-     *
-     * @sample
-     * val onClick = validateQuestionnaire(context, navController)
-     * Button(onClick = onClick) { Text("Submit") }
      */
     fun validateQuestionnaire(context: Context, navController: NavHostController): () -> Unit {
         return {

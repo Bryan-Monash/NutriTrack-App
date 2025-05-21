@@ -182,7 +182,6 @@ fun RandomImage(
 fun FruitDetailsSection(
     fruitApiViewModel: FruitApiViewModel,
 ) {
-    var fruitName by rememberSaveable { mutableStateOf("") }
     val uiState = fruitApiViewModel.uiState
         .observeAsState()
 
@@ -207,8 +206,8 @@ fun FruitDetailsSection(
             contentAlignment = Alignment.CenterStart
         ) {
             BasicTextField(
-                value = fruitName,
-                onValueChange = { fruitName = it },
+                value = fruitApiViewModel.fruitName.value,
+                onValueChange = { fruitApiViewModel.fruitName.value = it },
                 textStyle = TextStyle(
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurface
@@ -220,9 +219,9 @@ fun FruitDetailsSection(
         Spacer(modifier = Modifier.width(6.dp))
         Button(
             onClick = {
-                fruitApiViewModel.getFruitDetailByName(fruitName)
+                fruitApiViewModel.getFruitDetailByName()
             },
-            enabled = fruitName.isNotEmpty() && uiState.value !is UiState.Loading,
+            enabled = fruitApiViewModel.buttonEnable(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary

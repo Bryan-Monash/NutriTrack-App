@@ -3,6 +3,7 @@ package com.example.bryan_34309861_a3_app.ui.screens.PatientLoginScreen
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -34,6 +35,22 @@ class PatientLoginViewModel(context: Context): ViewModel() {
      * Using LiveData provides a way to observe changes to the data in real time
      */
     private val _thePatient = MutableLiveData<Patient>()
+
+    /**
+     * Public mutable strings that serves as placeholder
+     */
+    val patientIdPlaceholder = mutableStateOf("")
+    val patientPasswordPlaceholder = mutableStateOf("")
+
+    /**
+     * Public mutable boolean that serves as the state of the visibility of the password
+     */
+    val passwordVisible = mutableStateOf(false)
+
+    /**
+     * Public mutable boolean that serves as the state of expanded dropdown menu
+     */
+    val expanded = mutableStateOf(false)
 
     /**
      * Initialize the ViewModel by loading the list of all patients from the repository

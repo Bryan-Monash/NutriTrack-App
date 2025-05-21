@@ -90,17 +90,7 @@ fun InsightContent(
         }
 
         itemsIndexed(scoreMap) { _, (label, score) ->
-            val cappedScore = when (label) {
-                "Grains & Cereal", "Whole Grain", "Alcohol", "Water", "Saturated Fat", "Unsaturated Fat" -> 5f
-                else -> 10f
-            }
-            val progressRatio = score / cappedScore
-            val trackColor = when {
-                progressRatio >= 0.8f -> Color(0xFF4CAF50)   // Green
-                progressRatio >= 0.5f -> Color(0xFFFFC107)   // Amber
-                else -> Color(0xFFF44336)                   // Red
-            }
-
+            val info = insightViewModel.getProgressInfo(label, score)
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
@@ -119,14 +109,14 @@ fun InsightContent(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     ProgressBarWithIndicator(
-                        progress = progressRatio,
-                        progressColor = trackColor,
+                        progress = info.first,
+                        progressColor = info.third,
                         modifier = Modifier
                             .fillMaxWidth(0.7f)
                     )
 
                     Text(
-                        text = "${score} / ${cappedScore}",
+                        text = "$score / ${info.second} ",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Gray,

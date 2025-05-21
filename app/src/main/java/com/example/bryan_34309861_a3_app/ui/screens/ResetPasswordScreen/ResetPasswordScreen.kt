@@ -57,15 +57,15 @@ fun ResetPasswordScreen(
         factory = ResetPasswordViewModel.ResetPasswordViewModelFactory(context)
     )
 
-    var patientId by rememberSaveable { mutableStateOf("") }
-    var phoneNumber by rememberSaveable { mutableStateOf("") }
+    val patientId = viewModel.patientIdPlaceholder
+    val phoneNumber = viewModel.phoneNumberPlaceholder
 
     val allRegisteredPatients = viewModel.getAllRegisteredPatient()
 
-    var expanded by remember { mutableStateOf(false) }
+    val expanded = viewModel.expanded
     val verticalScroll = rememberScrollState()
 
-    var isVerified by rememberSaveable { mutableStateOf(false) }
+    val isVerified = viewModel.isVerified
 
     Column(
         modifier = Modifier
@@ -95,43 +95,43 @@ fun ResetPasswordScreen(
         )
 
         ExposedDropdownMenuBox(
-            expanded = if (!isVerified) expanded else false, // prevents it from expanding
+            expanded = if (!isVerified.value) expanded.value else false, // prevents it from expanding
             onExpandedChange = {
-                if (!isVerified) {
-                    expanded = !expanded
+                if (!isVerified.value) {
+                    expanded.value = !expanded.value
                 }
             },
             modifier = Modifier.fillMaxWidth(0.85f)
         ) {
             OutlinedTextField(
-                value = patientId,
+                value = patientId.value,
                 onValueChange = { },
                 label = { Text(stringResource(R.string.patientIdLabel), fontSize = 14.sp) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
                 trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
                 },
                 readOnly = true,
-                enabled = !isVerified,
+                enabled = !isVerified.value,
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                 singleLine = true
             )
-            if (!isVerified) {
+            if (!isVerified.value) {
                 ExposedDropdownMenu(
-                    expanded = expanded,
+                    expanded = expanded.value,
                     onDismissRequest = {
-                        expanded = false
+                        expanded.value = false
                     },
                 ) {
                     allRegisteredPatients.forEach { patient ->
                         DropdownMenuItem(
                             text = { Text(patient.patientId) },
                             onClick = {
-                                patientId = patient.patientId
-                                viewModel.getPatientById(patientId)
-                                expanded = !expanded
+                                patientId.value = patient.patientId
+                                viewModel.getPatientById(patientId.value)
+                                expanded.value = !expanded.value
                             }
                         )
                     }
@@ -141,26 +141,26 @@ fun ResetPasswordScreen(
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = phoneNumber,
-            onValueChange = { phoneNumber = it },
-            enabled = !isVerified,
+            value = phoneNumber.value,
+            onValueChange = { phoneNumber.value = it },
+            enabled = !isVerified.value,
             label = { Text("Phone Number", fontSize = 14.sp) },
             singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (!isVerified) {
+        if (!isVerified.value) {
             Button(
                 onClick = {
-                    val verified = viewModel.verifyPatient(phoneNumber, context)
-                    isVerified = verified
+                    val verified = viewModel.verifyPatient(phoneNumber.value, context)
+                    isVerified.value= verified
                 }
             ) {
                 Text("Verify Identity")
             }
         }
 
-        if (isVerified) {
+        if (isVerified.value) {
             ResetPasswordField(viewModel, navController, context)
         }
     }
@@ -172,26 +172,26 @@ fun ResetPasswordField(
     navController: NavHostController,
     context: Context
 ) {
-    var newPassword by rememberSaveable { mutableStateOf("") }
-    var newConfirmPassword by rememberSaveable { mutableStateOf("") }
+    val newPassword = viewModel.passwordPlaceholder
+    val newConfirmPassword = viewModel.confirmPasswordPlaceholder
 
-    var newPasswordVisible by rememberSaveable { mutableStateOf(false) }
-    var newConfirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    val newPasswordVisible = viewModel.passwordVisible
+    val newConfirmPasswordVisible = viewModel.confirmPasswordVisible
 
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(0.85f),
-        value = newPassword,
-        onValueChange = { newPassword = it },
+        value = newPassword.value,
+        onValueChange = { newPassword.value = it },
         label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
-        visualTransformation = if (newPasswordVisible) VisualTransformation.None
-        else PasswordVisualTransformation(),
+        visualTransformation = if (newPasswordVisible.value) VisualTransformation.None
+                                else PasswordVisualTransformation(),
         trailingIcon = {
-            val image = if (newPasswordVisible) Icons.Default.Visibility
-            else Icons.Default.VisibilityOff
-            val description = if (newPasswordVisible) "Hide password"
-            else "Show password"
+            val image = if (newPasswordVisible.value) Icons.Default.Visibility
+                                    else Icons.Default.VisibilityOff
+            val description = if (newPasswordVisible.value) "Hide password"
+                                    else "Show password"
             IconButton(
-                onClick = { newPasswordVisible = !newPasswordVisible }
+                onClick = { newPasswordVisible.value = !newPasswordVisible.value }
             ) {
                 Icon(imageVector = image, contentDescription = description)
             }
@@ -201,18 +201,18 @@ fun ResetPasswordField(
     Spacer(modifier = Modifier.height(12.dp))
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(0.85f),
-        value = newConfirmPassword,
-        onValueChange = { newConfirmPassword = it },
+        value = newConfirmPassword.value,
+        onValueChange = { newConfirmPassword.value = it },
         label = { Text("Confirm Password", fontSize = 14.sp) },
-        visualTransformation = if (newConfirmPasswordVisible) VisualTransformation.None
-        else PasswordVisualTransformation(),
+        visualTransformation = if (newConfirmPasswordVisible.value) VisualTransformation.None
+                                else PasswordVisualTransformation(),
         trailingIcon = {
-            val image = if (newConfirmPasswordVisible) Icons.Default.Visibility
-            else Icons.Default.VisibilityOff
-            val description = if (newConfirmPasswordVisible) "Hide password"
-            else "Show password"
+            val image = if (newConfirmPasswordVisible.value) Icons.Default.Visibility
+                                    else Icons.Default.VisibilityOff
+            val description = if (newConfirmPasswordVisible.value) "Hide password"
+                                    else "Show password"
             IconButton(
-                onClick = { newConfirmPasswordVisible = !newConfirmPasswordVisible }
+                onClick = { newConfirmPasswordVisible.value = !newConfirmPasswordVisible.value }
             ) {
                 Icon(imageVector = image, contentDescription = description)
             }
@@ -229,8 +229,8 @@ fun ResetPasswordField(
     Spacer(modifier = Modifier.height(12.dp))
     Button(
         onClick = viewModel.resetPassword(
-            newPassword,
-            newConfirmPassword,
+            newPassword.value,
+            newConfirmPassword.value,
             context,
             navController
         ),

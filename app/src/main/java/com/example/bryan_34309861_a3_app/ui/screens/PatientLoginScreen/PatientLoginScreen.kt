@@ -57,11 +57,11 @@ fun PatientLoginScreen(
         factory = PatientLoginViewModel.PatientLoginViewModelFactory(context)
     )
 
-    val patientId = rememberSaveable { mutableStateOf("") }
-    val password = rememberSaveable { mutableStateOf("") }
+    val patientId = patientLoginViewModel.patientIdPlaceholder
+    val password = patientLoginViewModel.patientPasswordPlaceholder
     val allRegisteredPatients = patientLoginViewModel.getAllRegisteredPatient()
-    var expanded by remember { mutableStateOf(false) }
-    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    val expanded = patientLoginViewModel.expanded
+    var passwordVisible = patientLoginViewModel.passwordVisible
 
     LazyColumn(
         modifier = Modifier
@@ -96,8 +96,8 @@ fun PatientLoginScreen(
 
         item {
             ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
+                expanded = expanded.value,
+                onExpandedChange = { expanded.value = !expanded.value },
                 modifier = Modifier.fillMaxWidth(0.85f)
             ) {
                 OutlinedTextField(
@@ -108,22 +108,22 @@ fun PatientLoginScreen(
                         .fillMaxWidth()
                         .menuAnchor(),
                     trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
                     },
                     readOnly = true,
                     colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                     singleLine = true
                 )
                 ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    expanded = expanded.value,
+                    onDismissRequest = { expanded.value = false }
                 ) {
                     allRegisteredPatients.forEach { patient ->
                         DropdownMenuItem(
                             text = { Text(patient.patientId) },
                             onClick = {
                                 patientId.value = patient.patientId
-                                expanded = !expanded
+                                expanded.value = !expanded.value
                                 patientLoginViewModel.getPatientById(patientId.value)
                             }
                         )
@@ -140,15 +140,15 @@ fun PatientLoginScreen(
                 value = password.value,
                 onValueChange = { password.value = it },
                 label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
-                visualTransformation = if (passwordVisible) VisualTransformation.None
+                visualTransformation = if (passwordVisible.value) VisualTransformation.None
                 else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val image = if (passwordVisible) Icons.Default.Visibility
+                    val image = if (passwordVisible.value) Icons.Default.Visibility
                     else Icons.Default.VisibilityOff
-                    val description = if (passwordVisible) "Hide password"
+                    val description = if (passwordVisible.value) "Hide password"
                     else "Show password"
                     IconButton(
-                        onClick = { passwordVisible = !passwordVisible }
+                        onClick = { passwordVisible.value = !passwordVisible.value }
                     ) {
                         Icon(imageVector = image, contentDescription = description)
                     }

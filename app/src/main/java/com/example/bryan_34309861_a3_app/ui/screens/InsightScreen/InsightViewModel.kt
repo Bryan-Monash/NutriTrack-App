@@ -1,6 +1,7 @@
 package com.example.bryan_34309861_a3_app.ui.screens.InsightScreen
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -99,6 +100,28 @@ class InsightViewModel(context: Context): ViewModel() {
             "Alcohol" to (_thePatient.value?.alcoholScore?: 0f),
             "Discretionary" to (_thePatient.value?.discretionaryScore?: 0f)
         )
+    }
+
+    /**
+     * Gets the maximum score for each category and also its progress ratio and color based on the ratio
+     *
+     * @param label The label of the type of scores
+     * @param score The score of the the category
+     * @return A triple containing the score, maximum score and also the color
+     */
+    fun getProgressInfo(label: String, score: Float): Triple<Float, Float, Color> {
+        val cappedScore = when (label) {
+            "Grains & Cereal", "Whole Grain", "Alcohol", "Water", "Saturated Fat", "Unsaturated Fat" -> 5f
+            else -> 10f
+        }
+        val progressRatio = score / cappedScore
+        val trackColor = when {
+            progressRatio >= 0.8f -> Color(0xFF4CAF50)   // Green
+            progressRatio >= 0.5f -> Color(0xFFFFC107)   // Amber
+            else -> Color(0xFFF44336)                   // Red
+        }
+
+        return Triple(progressRatio, cappedScore, trackColor)
     }
 
     // Factory class for creating instances of InsightViewModel

@@ -58,17 +58,17 @@ fun RegisterScreen(
     val registerViewModel: RegisterViewModel = viewModel(
         factory = RegisterViewModel.RegisterViewModelFactory(context)
     )
-    var patientId by rememberSaveable { mutableStateOf("") }
-    var phoneNumber by rememberSaveable { mutableStateOf("") }
-    var patientName by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var confirmPassword by rememberSaveable { mutableStateOf("") }
+    val patientId = registerViewModel.patientIdPlaceholder
+    val phoneNumber = registerViewModel.phoneNumberPlaceholder
+    val patientName = registerViewModel.patientNamePlaceholder
+    val password = registerViewModel.passwordPlaceholder
+    val confirmPassword = registerViewModel.confirmPasswordPlaceholder
 
     val allUnregisteredPatients = registerViewModel.getAllUnregisteredPatient()
 
-    var expanded by remember { mutableStateOf(false) }
-    var passwordVisible by rememberSaveable { mutableStateOf(false) }
-    var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    val expanded = registerViewModel.expanded
+    val passwordVisible = registerViewModel.passwordVisible
+    val confirmPasswordVisible = registerViewModel.confirmPasswordVisible
     val verticalScroll = rememberScrollState()
 
     Column(
@@ -99,37 +99,37 @@ fun RegisterScreen(
         )
 
         ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded },
+            expanded = expanded.value,
+            onExpandedChange = { expanded.value = !expanded.value },
             modifier = Modifier.fillMaxWidth(0.85f)
         ) {
             OutlinedTextField(
-                value = patientId,
+                value = patientId.value,
                 onValueChange = {  },
                 label = { Text(stringResource(R.string.patientIdLabel), fontSize = 14.sp) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
                 trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
                 },
                 readOnly = true,
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                 singleLine = true
             )
             ExposedDropdownMenu(
-                expanded = expanded,
+                expanded = expanded.value,
                 onDismissRequest = {
-                    expanded = false
+                    expanded.value = false
                 },
             ) {
                 allUnregisteredPatients.forEach { patient ->
                     DropdownMenuItem(
                         text = { Text(patient.patientId) },
                         onClick = {
-                            patientId = patient.patientId
-                            registerViewModel.getPatientById(patientId)
-                            expanded = !expanded
+                            patientId.value = patient.patientId
+                            registerViewModel.getPatientById(patientId.value)
+                            expanded.value = !expanded.value
                         }
                     )
                 }
@@ -138,34 +138,34 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = patientName,
-            onValueChange = { patientName = it },
+            value = patientName.value,
+            onValueChange = { patientName.value = it },
             label = { Text("Enter Name", fontSize = 14.sp) },
             singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = phoneNumber,
-            onValueChange = { phoneNumber = it },
+            value = phoneNumber.value,
+            onValueChange = { phoneNumber.value = it },
             label = { Text("Phone Number", fontSize = 14.sp) },
             singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = password,
-            onValueChange = { password = it },
+            value = password.value,
+            onValueChange = { password.value = it },
             label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
-            visualTransformation = if (passwordVisible) VisualTransformation.None
-                    else PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible.value) VisualTransformation.None
+                                    else PasswordVisualTransformation(),
             trailingIcon = {
-                val image = if (passwordVisible) Icons.Default.Visibility
-                            else Icons.Default.VisibilityOff
-                val description = if (passwordVisible) "Hide password"
-                                    else "Show password"
+                val image = if (passwordVisible.value) Icons.Default.Visibility
+                                        else Icons.Default.VisibilityOff
+                val description = if (passwordVisible.value) "Hide password"
+                                        else "Show password"
                 IconButton(
-                    onClick = { passwordVisible = !passwordVisible }
+                    onClick = { passwordVisible.value = !passwordVisible.value }
                 ) {
                     Icon(imageVector = image, contentDescription = description)
                 }
@@ -175,18 +175,18 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
+            value = confirmPassword.value,
+            onValueChange = { confirmPassword.value = it },
             label = { Text("Confirm Password", fontSize = 14.sp) },
-            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None
+            visualTransformation = if (confirmPasswordVisible.value) VisualTransformation.None
                                     else PasswordVisualTransformation(),
             trailingIcon = {
-                val image = if (confirmPasswordVisible) Icons.Default.Visibility
-                else Icons.Default.VisibilityOff
-                val description = if (confirmPasswordVisible) "Hide password"
-                else "Show password"
+                val image = if (confirmPasswordVisible.value) Icons.Default.Visibility
+                                        else Icons.Default.VisibilityOff
+                val description = if (confirmPasswordVisible.value) "Hide password"
+                                        else "Show password"
                 IconButton(
-                    onClick = { confirmPasswordVisible = !confirmPasswordVisible }
+                    onClick = { confirmPasswordVisible.value = !confirmPasswordVisible.value }
                 ) {
                     Icon(imageVector = image, contentDescription = description)
                 }
@@ -203,10 +203,10 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             onClick = registerViewModel.validatePatient(
-                    patientName,
-                    phoneNumber,
-                    password,
-                    confirmPassword,
+                    patientName.value,
+                    phoneNumber.value,
+                    password.value,
+                    confirmPassword.value,
                     context,
                     navController
                 ),

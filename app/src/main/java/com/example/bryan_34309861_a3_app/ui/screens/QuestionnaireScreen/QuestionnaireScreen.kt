@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -148,10 +149,7 @@ fun QuestionnaireScreenContent(
 fun CheckBoxQuestion(
     questionnaireViewModel: QuestionnaireViewModel,
 ) {
-    val categories = listOf(
-        "Fruits", "Vegetables", "Grains", "Red Meat", "Seafood",
-        "Poultry", "Fish", "Eggs", "Nuts/Seeds"
-    )
+    val categories = questionnaireViewModel.getFoodCategories()
 
     val checkboxStates = questionnaireViewModel.foodIntake
         .observeAsState().value?.checkboxes ?: List(categories.size) { false }
@@ -204,13 +202,10 @@ fun CheckBoxQuestion(
 fun Persona(
     questionnaireViewModel: QuestionnaireViewModel,
 ) {
-    val modalStates = remember { mutableStateListOf(*Array(6) { false }) }
-    var expanded by remember { mutableStateOf(false) }
-    val personaList = listOf(
-        "Health Devotee", "Mindful Eater", "Wellness Striver",
-        "Balance Seeker", "Health Procrastinator", "Food Carefree"
-    )
-    var persona = questionnaireViewModel.foodIntake
+    val modalStates = questionnaireViewModel.personaModalStates
+    val expanded = questionnaireViewModel.personaExpanded
+    val personaList = questionnaireViewModel.getPersonaList()
+    val persona = questionnaireViewModel.foodIntake
         .observeAsState().value?.persona
 
     Text(
@@ -263,8 +258,8 @@ fun Persona(
         fontSize = 12.sp
     )
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
+        expanded = expanded.value,
+        onExpandedChange = { expanded.value = it },
         modifier = Modifier.fillMaxWidth(),
     ) {
         OutlinedTextField(
@@ -276,14 +271,14 @@ fun Persona(
             onValueChange = {},
             textStyle = TextStyle(fontSize = 12.sp),
             trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
             },
             readOnly = true,
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
         )
         ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
+            expanded = expanded.value,
+            onDismissRequest = { expanded.value = false },
             modifier = Modifier.fillMaxWidth()
         ) {
             personaList.forEach { option ->
@@ -293,7 +288,7 @@ fun Persona(
                         questionnaireViewModel.updatePersona(
                             persona = option
                         )
-                        expanded = false
+                        expanded.value = false
                     }
                 )
             }
@@ -310,10 +305,12 @@ fun ShowModal(
         val thePersona = getPersonaInfo(index)
         AlertDialog(
             onDismissRequest = { modalStates[index] = false },
-            text = { Text(stringResource(thePersona.descriptionRes), textAlign = TextAlign.Center) },
+            text = { },
             title = {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
@@ -327,21 +324,25 @@ fun ShowModal(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
+                    Text(
+                        text = stringResource(thePersona.descriptionRes),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Button(onClick = {
+                            modalStates[index] = false
+                        }) {
+                            Text("Dismiss")
+                        }
+                    }
                 }
             },
             confirmButton = {},
-            dismissButton = {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Button(onClick = {
-                        modalStates[index] = false
-                    }) {
-                        Text("Dismiss")
-                    }
-                }
-            }
+            dismissButton = {}
         )
     }
 }
@@ -411,37 +412,6 @@ fun InputRow(
                     .weight(0.3f)
                     .clickable { mTimePickerDialog.show() }
             ) {
-//                OutlinedTextField(
-//                    value = timeValue.value,
-//                    onValueChange = { },
-//                    textStyle = TextStyle(fontSize = 14.sp, textAlign = TextAlign.Center),
-//                    keyboardOptions = KeyboardOptions.Default.copy(
-//                        keyboardType = KeyboardType.Number
-//                    ),
-//                    singleLine = true,
-//                    enabled = false,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(48.dp),
-//                    leadingIcon = {
-//                        Icon(
-//                            Icons.Filled.AccessTime,
-//                            "time",
-//                            Modifier
-//                                .clickable {
-//                                    mTimePickerDialog.show()
-//                                }
-//                                .size(16.dp)
-//                        )
-//                    },
-//                    colors = OutlinedTextFieldDefaults.colors().copy(
-//                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-//                        disabledIndicatorColor = MaterialTheme.colorScheme.outline,
-//                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant)
-//                )
                 ReadOnlyTimeBox(
                     timeText = timeValue.value,
                     onIconClick = {

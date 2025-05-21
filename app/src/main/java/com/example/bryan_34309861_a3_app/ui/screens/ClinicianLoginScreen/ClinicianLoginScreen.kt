@@ -44,8 +44,8 @@ fun ClinicianLoginScreen(
         factory = ClinicianLoginViewModel.ClinicianLoginViewModelFactory(context)
     )
 
-    val key = rememberSaveable { mutableStateOf("") }
-    var keyVisible by rememberSaveable { mutableStateOf(false) }
+    val inputKey = clinicianLoginViewModel.inputKey
+    val keyVisible = clinicianLoginViewModel.keyVisible
 
     LazyColumn(
         modifier = Modifier
@@ -69,15 +69,15 @@ fun ClinicianLoginScreen(
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
                     .padding(vertical = 12.dp),
-                value = key.value,
-                onValueChange = { key.value = it },
+                value = inputKey.value,
+                onValueChange = { inputKey.value = it },
                 label = { Text(stringResource(R.string.clinicianKey), fontSize = 14.sp) },
-                visualTransformation = if (keyVisible) VisualTransformation.None
+                visualTransformation = if (keyVisible.value) VisualTransformation.None
                 else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val image = if (keyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                    val description = if (keyVisible) "Hide password" else "Show password"
-                    IconButton(onClick = { keyVisible = !keyVisible }) {
+                    val image = if (keyVisible.value) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    val description = if (keyVisible.value) "Hide password" else "Show password"
+                    IconButton(onClick = { keyVisible.value = !keyVisible.value }) {
                         Icon(imageVector = image, contentDescription = description)
                     }
                 },
@@ -87,7 +87,7 @@ fun ClinicianLoginScreen(
 
         item {
             Button(
-                onClick = clinicianLoginViewModel.validateKey(key.value, context, navController),
+                onClick = clinicianLoginViewModel.validateKey(context, navController),
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
                     .padding(vertical = 12.dp)
