@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -25,7 +24,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -42,7 +40,6 @@ fun InsightScreen(
     navController: NavHostController,
     context: Context
 ) {
-    val _context = LocalContext.current
     val insightViewModel: InsightViewModel = viewModel(
         factory = InsightViewModel.InsightViewModelFactory(context)
     )
@@ -61,7 +58,7 @@ fun InsightScreen(
             InsightContent(
                 navController,
                 insightViewModel,
-                _context
+                context
             )
         }
         else -> Unit
@@ -72,7 +69,7 @@ fun InsightScreen(
 fun InsightContent(
     navController: NavHostController,
     insightViewModel: InsightViewModel,
-    _context: Context
+    context: Context
 ) {
     val scoreMap = insightViewModel.getPatientScore()
     val totalScore = insightViewModel.getPatientTotalScore()
@@ -179,7 +176,7 @@ fun InsightContent(
                         type = "text/plain"
                         putExtra(Intent.EXTRA_TEXT, "Hi! I've got a HEIFA score of $totalScore!")
                     }
-                    _context.startActivity(Intent.createChooser(shareIntent, "Share text via"))
+                    context.startActivity(Intent.createChooser(shareIntent, "Share text via"))
                 },
                 modifier = Modifier.fillMaxWidth(0.9f)
             ) {

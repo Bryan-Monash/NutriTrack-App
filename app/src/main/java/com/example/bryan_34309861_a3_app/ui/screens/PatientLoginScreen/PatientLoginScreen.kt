@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
@@ -30,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,157 +57,185 @@ fun PatientLoginScreen(
         factory = PatientLoginViewModel.PatientLoginViewModelFactory(context)
     )
 
-    val patientId = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
+    val patientId = rememberSaveable { mutableStateOf("") }
+    val password = rememberSaveable { mutableStateOf("") }
     val allRegisteredPatients = patientLoginViewModel.getAllRegisteredPatient()
     var expanded by remember { mutableStateOf(false) }
-    var passwordVisible by remember { mutableStateOf(false) }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            IconButton(onClick = { navController.navigate(AppDashboardScreen.Welcome.route) }) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back"
-                )
-            }
-        }
-        Text(
-            text = stringResource(R.string.patientLogin),
-            modifier = Modifier.padding(bottom = 24.dp),
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded },
-            modifier = Modifier.fillMaxWidth(0.85f)
-        ) {
-            OutlinedTextField(
-                value = patientId.value,
-                onValueChange = {  },
-                label = { Text(stringResource(R.string.patientIdLabel), fontSize = 14.sp) },
+        item {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(),
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                },
-                readOnly = true,
-                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                singleLine = true
-            )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = {
-                    expanded = false
-                },
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
             ) {
-                allRegisteredPatients.forEach { patient ->
-                    DropdownMenuItem(
-                        text = { Text(patient.patientId) },
-                        onClick = {
-                            patientId.value = patient.patientId
-                            expanded = !expanded
-                            patientLoginViewModel.getPatientById(patientId.value)
-                        }
+                IconButton(onClick = { navController.navigate(AppDashboardScreen.Welcome.route) }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
                     )
                 }
             }
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            value = password.value,
-            onValueChange = { password.value = it },
-            label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
-            visualTransformation = if (passwordVisible) VisualTransformation.None
-            else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (passwordVisible) Icons.Default.Visibility
-                else Icons.Default.VisibilityOff
-                val description = if (passwordVisible) "Hide password"
-                else "Show password"
-                IconButton(
-                    onClick = { passwordVisible = !passwordVisible }
-                ) {
-                    Icon(imageVector = image, contentDescription = description)
-                }
-            },
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(stringResource(R.string.loginDisclaimer),
-            textAlign = TextAlign.Center,
-            fontSize = 12.sp,
-            lineHeight = 20.sp
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = patientLoginViewModel.isAuthorized(
-                patientId.value,
-                password.value,
-                context,
-                navController
-            ),
-            modifier = Modifier.padding(top = 24.dp).fillMaxWidth(0.85f)
-        ) {
-            Text("Continue")
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
+
+        item {
             Text(
-                text = "Don't have an account?",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Sign up",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable {
-                    navController.navigate(AppDashboardScreen.Register.route)
-                }
+                text = stringResource(R.string.patientLogin),
+                modifier = Modifier.padding(bottom = 24.dp),
+                style = MaterialTheme.typography.headlineMedium
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Forget your password?",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Reset password",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable {
-                    navController.navigate(AppDashboardScreen.ResetPassword.route)
+        item {
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth(0.85f)
+            ) {
+                OutlinedTextField(
+                    value = patientId.value,
+                    onValueChange = { },
+                    label = { Text(stringResource(R.string.patientIdLabel), fontSize = 14.sp) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    readOnly = true,
+                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    singleLine = true
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    allRegisteredPatients.forEach { patient ->
+                        DropdownMenuItem(
+                            text = { Text(patient.patientId) },
+                            onClick = {
+                                patientId.value = patient.patientId
+                                expanded = !expanded
+                                patientLoginViewModel.getPatientById(patientId.value)
+                            }
+                        )
+                    }
                 }
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(12.dp)) }
+
+        item {
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(0.85f),
+                value = password.value,
+                onValueChange = { password.value = it },
+                label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
+                visualTransformation = if (passwordVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Default.Visibility
+                    else Icons.Default.VisibilityOff
+                    val description = if (passwordVisible) "Hide password"
+                    else "Show password"
+                    IconButton(
+                        onClick = { passwordVisible = !passwordVisible }
+                    ) {
+                        Icon(imageVector = image, contentDescription = description)
+                    }
+                },
+                singleLine = true
             )
+        }
+
+        item { Spacer(modifier = Modifier.height(12.dp)) }
+
+        item {
+            Text(
+                stringResource(R.string.loginDisclaimer),
+                textAlign = TextAlign.Center,
+                fontSize = 12.sp,
+                lineHeight = 20.sp
+            )
+        }
+
+        item { Spacer(modifier = Modifier.height(12.dp)) }
+
+        item {
+            Button(
+                onClick = patientLoginViewModel.isAuthorized(
+                    patientId.value,
+                    password.value,
+                    context,
+                    navController
+                ),
+                modifier = Modifier
+                    .padding(top = 24.dp)
+                    .fillMaxWidth(0.85f)
+            ) {
+                Text("Continue")
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(12.dp)) }
+
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Don't have an account?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Sign up",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable {
+                        navController.navigate(AppDashboardScreen.Register.route)
+                    }
+                )
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(12.dp)) }
+
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Forget your password?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Reset password",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable {
+                        navController.navigate(AppDashboardScreen.ResetPassword.route)
+                    }
+                )
+            }
         }
     }
 }

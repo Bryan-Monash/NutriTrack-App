@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,8 +44,8 @@ fun ClinicianLoginScreen(
         factory = ClinicianLoginViewModel.ClinicianLoginViewModelFactory(context)
     )
 
-    val key = remember { mutableStateOf("") }
-    var keyVisible by remember { mutableStateOf(false) }
+    val key = rememberSaveable { mutableStateOf("") }
+    var keyVisible by rememberSaveable { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier

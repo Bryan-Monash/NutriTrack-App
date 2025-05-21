@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,15 +57,15 @@ fun ResetPasswordScreen(
         factory = ResetPasswordViewModel.ResetPasswordViewModelFactory(context)
     )
 
-    var patientId by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
+    var patientId by rememberSaveable { mutableStateOf("") }
+    var phoneNumber by rememberSaveable { mutableStateOf("") }
 
     val allRegisteredPatients = viewModel.getAllRegisteredPatient()
 
     var expanded by remember { mutableStateOf(false) }
     val verticalScroll = rememberScrollState()
 
-    var isVerified by remember { mutableStateOf(false) }
+    var isVerified by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -171,11 +172,11 @@ fun ResetPasswordField(
     navController: NavHostController,
     context: Context
 ) {
-    var newPassword by remember { mutableStateOf("") }
-    var newConfirmPassword by remember { mutableStateOf("") }
+    var newPassword by rememberSaveable { mutableStateOf("") }
+    var newConfirmPassword by rememberSaveable { mutableStateOf("") }
 
-    var newPasswordVisible by remember { mutableStateOf(false) }
-    var newConfirmPasswordVisible by remember { mutableStateOf(false) }
+    var newPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    var newConfirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(0.85f),
