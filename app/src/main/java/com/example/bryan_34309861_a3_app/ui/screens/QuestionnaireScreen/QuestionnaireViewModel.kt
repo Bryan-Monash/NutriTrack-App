@@ -223,6 +223,10 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
             if (checkboxesValid && personaValid && timeValid && timesDifferent && eatTimeOptimal) {
                 Toast.makeText(context, "Questionnaire submitted", Toast.LENGTH_SHORT).show()
                 navController.navigate(AppDashboardScreen.Home.route)
+                context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("filled_$patientId", true)
+                    .apply()
             } else {
                 when {
                     !checkboxesValid -> Toast.makeText(context, "Choose at least one food", Toast.LENGTH_SHORT).show()

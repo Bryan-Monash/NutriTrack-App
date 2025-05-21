@@ -110,7 +110,7 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         if (currentRoute?.destination?.route
                             == AppDashboardScreen.Questionnaire.route) {
-                            MyTopAppBar(navController)
+                            MyTopAppBar(navController, context)
                         }
                     },
                     floatingActionButton = {
@@ -203,8 +203,10 @@ fun NavHostApp(
 
 @Composable
 fun InitialLaunchScreen(navController: NavHostController, context: Context) {
-    val currentSession = context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
-        .getString("currentSession", null)
+    val sharedPref = context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
+    val currentSession = sharedPref.getString("currentSession", null)
+
+    val answeredQuestionnaire = sharedPref.getBoolean("filled_$currentSession", false)
 
     LaunchedEffect(Unit) {
         if (currentSession == null) {
@@ -212,8 +214,14 @@ fun InitialLaunchScreen(navController: NavHostController, context: Context) {
                 popUpTo(AppDashboardScreen.Launch.route) { inclusive = true }
             }
         } else {
-            navController.navigate(AppDashboardScreen.Questionnaire.route) {
-                popUpTo(AppDashboardScreen.Launch.route) { inclusive = true }
+            if (answeredQuestionnaire) {
+                navController.navigate(AppDashboardScreen.Home.route) {
+                    popUpTo(AppDashboardScreen.Launch.route) { inclusive = true }
+                }
+            } else {
+                navController.navigate(AppDashboardScreen.Questionnaire.route) {
+                    popUpTo(AppDashboardScreen.Launch.route) { inclusive = true }
+                }
             }
         }
     }

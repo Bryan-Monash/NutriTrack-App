@@ -100,6 +100,9 @@ class PatientLoginViewModel(context: Context): ViewModel() {
      * Shows appropriate Toast messages for various validation outcomes and navigates to the
      * questionnaire screen if login is successful.
      *
+     * If the patient have filled in the questionnaire before, it will navigate them to the
+     * home screen else they will be sent to the questionnaire screen
+     *
      * @param patientId The ID of the patient attempting to log in.
      * @param password The plaintext password entered by the user.
      * @param context The context used to display Toast messages.
@@ -138,7 +141,10 @@ class PatientLoginViewModel(context: Context): ViewModel() {
             {
                 Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                 AuthManager.login(patientId, context)
-                navController.navigate(AppDashboardScreen.Questionnaire.route)
+                val answered = context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)
+                    .getBoolean("filled_$patientId", false)
+                if (answered) navController.navigate(AppDashboardScreen.Home.route)
+                else navController.navigate(AppDashboardScreen.Questionnaire.route)
             }
         }
     }
