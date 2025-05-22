@@ -2,8 +2,11 @@ package com.example.bryan_34309861_a3_app.ui.screens.QuestionnaireScreen
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -58,6 +61,15 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
         get() = _uiState
 
     /**
+     * Public mutable placeholders that serves as placeholder for user inputs
+     */
+    val checkboxPlaceholder = mutableStateOf(mutableStateListOf(*Array(9) { false }))
+    val personaPlaceholder = mutableStateOf("")
+    val eatTimePlaceholder = mutableStateOf("")
+    val sleepTimePlaceholder = mutableStateOf("")
+    val wakeUpTimePlaceholder = mutableStateOf("")
+
+    /**
      * Public mutable boolean that serves as the state of the dropdown menu
      */
     val personaExpanded = mutableStateOf(false)
@@ -83,13 +95,16 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      */
     private fun loadFoodIntake() {
         viewModelScope.launch {
-//            _uiState.value = UiState.Loading
             try {
                 val foodIntake = repository.getAllIntakesByPatientId(patientId)
                 _foodIntake.value = foodIntake
-//                _uiState.value = UiState.Success("Questionnaire fetched successfully")
+                checkboxPlaceholder.value = foodIntake.checkboxes.toMutableStateList()
+                personaPlaceholder.value = foodIntake.persona
+                eatTimePlaceholder.value = foodIntake.eatTime
+                sleepTimePlaceholder.value = foodIntake.sleepTime
+                wakeUpTimePlaceholder.value = foodIntake.wakeUpTime
             } catch (e: Exception) {
-//                _uiState.value = UiState.Error(" Error loading questionnaire: ${e.localizedMessage}")
+                println(e.stackTrace)
             }
         }
     }
@@ -125,9 +140,9 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      * @param checkboxes the checkboxes from the UI
      * @param index the index of the checkbox being changed
      */
-    fun updateCheckbox(index: Int) {
+    private fun updateCheckbox() {
         viewModelScope.launch {
-            repository.updateFoodIntakeCheckbox(_foodIntake.value!!, index)
+            _foodIntake.value?. let { repository.updateFoodIntakeCheckbox(it, checkboxPlaceholder.value) }
             loadFoodIntake()
         }
     }
@@ -138,9 +153,9 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      * @param foodIntake The foodIntake to be updated
      * @param persona the persona from the UI
      */
-    fun updatePersona(persona: String) {
+    private fun updatePersona() {
         viewModelScope.launch {
-            _foodIntake.value?.let { repository.updateFoodIntakePersona(it, persona) }
+            _foodIntake.value?.let { repository.updateFoodIntakePersona(it, personaPlaceholder.value) }
             loadFoodIntake()
         }
     }
@@ -152,9 +167,16 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      * @param timeType the type of time being changed
      * @param time the value of the time
      */
-    fun updateTime(timeType: String, time: String) {
+    private fun updateTime() {
         viewModelScope.launch {
-            _foodIntake.value?.let { repository.updateFoodIntakeTime(it, timeType, time) }
+            _foodIntake.value?.let {
+                repository.updateFoodIntakeTime(
+                    it,
+                    eatTimePlaceholder.value,
+                    sleepTimePlaceholder.value,
+                    wakeUpTimePlaceholder.value
+                )
+            }
             loadFoodIntake()
         }
     }
@@ -221,6 +243,9 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
             }
 
             if (checkboxesValid && personaValid && timeValid && timesDifferent && eatTimeOptimal) {
+                updateCheckbox()
+                updatePersona()
+                updateTime()
                 Toast.makeText(context, "Questionnaire submitted", Toast.LENGTH_SHORT).show()
                 navController.navigate(AppDashboardScreen.Home.route)
                 context.getSharedPreferences("AppMemo", Context.MODE_PRIVATE)

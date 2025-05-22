@@ -27,11 +27,9 @@ class FoodIntakeRepository(context: Context) {
      * @param checkboxes the checkboxes from the UI
      * @param index the index of the checkbox being changed
      */
-    suspend fun updateFoodIntakeCheckbox(foodIntake: FoodIntake, index: Int) {
-        val updatedCheckboxes = foodIntake.checkboxes.toMutableList()
-        updatedCheckboxes[index] = !updatedCheckboxes[index]
-        val updatedFoodIntake = foodIntake.copy(checkboxes = updatedCheckboxes)
-        foodIntakeDao.updateFoodIntake(updatedFoodIntake)
+    suspend fun updateFoodIntakeCheckbox(foodIntake: FoodIntake, checkbox: List<Boolean>) {
+        foodIntake.checkboxes = checkbox
+        foodIntakeDao.updateFoodIntake(foodIntake)
     }
 
 
@@ -55,15 +53,13 @@ class FoodIntakeRepository(context: Context) {
      */
     suspend fun updateFoodIntakeTime(
         foodIntake: FoodIntake,
-        timeType: String,
-        time: String
+        eatTime: String,
+        sleepTime: String,
+        wakeUpTime: String
     ) {
-        when (timeType) {
-            "eat" -> foodIntake.eatTime = time
-            "sleep" -> foodIntake.sleepTime = time
-            "wakeUp" -> foodIntake.wakeUpTime = time
-            else -> null
-        }
+        foodIntake.eatTime = eatTime
+        foodIntake.sleepTime = sleepTime
+        foodIntake.wakeUpTime = wakeUpTime
         foodIntakeDao.updateFoodIntake(foodIntake)
     }
 

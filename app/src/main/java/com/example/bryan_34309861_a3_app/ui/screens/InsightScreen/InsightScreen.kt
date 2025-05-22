@@ -82,6 +82,7 @@ fun InsightContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
+            // Title of the screen
             Text(
                 text = "Insights: Food Score",
                 fontSize = 24.sp,
@@ -91,6 +92,7 @@ fun InsightContent(
 
         itemsIndexed(scoreMap) { _, (label, score) ->
             val info = insightViewModel.getProgressInfo(label, score)
+            // Score of each category
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
@@ -129,6 +131,7 @@ fun InsightContent(
 
 
         item {
+            // Total Food Quality Score
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Total Food Quality Score",
@@ -138,6 +141,7 @@ fun InsightContent(
         }
 
         item {
+            // Total Food Quality Score
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -152,6 +156,7 @@ fun InsightContent(
         }
 
         item {
+            // Total Food Quality Score
             Text(
                 "$totalScore / 100",
                 fontWeight = FontWeight.Bold
@@ -159,6 +164,7 @@ fun InsightContent(
         }
 
         item {
+            // Share button
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
@@ -175,6 +181,7 @@ fun InsightContent(
         }
 
         item {
+            // Improve my diet button (NutriCoachScreen)
             Button(
                 onClick = {
                     navController.navigate(AppDashboardScreen.NutriCoach.route)
@@ -201,6 +208,7 @@ fun ProgressBarWithIndicator(
     circleRadius: Dp = 10.dp,
     borderWidth: Dp = 2.dp
 ) {
+    // Create a linear progress bar with a circle indicator
     Canvas(modifier = modifier.height(height)) {
         val width = size.width
         val heightPx = size.height

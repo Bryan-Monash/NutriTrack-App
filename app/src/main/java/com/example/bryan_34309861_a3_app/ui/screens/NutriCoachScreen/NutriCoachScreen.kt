@@ -114,6 +114,7 @@ fun NutriCoachScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
+            // Title of the screen
             Text(
                 text = "NutriCoach",
                 style = MaterialTheme.typography.titleLarge,
@@ -127,6 +128,7 @@ fun NutriCoachScreenContent(
         }
 
         item {
+            // Fruit detail section
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
@@ -148,6 +150,7 @@ fun NutriCoachScreenContent(
         }
 
         item {
+            // NutriCoachTips
             GenAISection(nutriCoachTipViewModel)
         }
     }
@@ -197,6 +200,7 @@ fun FruitDetailsSection(
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.width(6.dp))
+        // Text field for user input
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -217,6 +221,8 @@ fun FruitDetailsSection(
             )
         }
         Spacer(modifier = Modifier.width(6.dp))
+
+        // Button to get the retrieve fruit information from API
         Button(
             onClick = {
                 fruitApiViewModel.getFruitDetailByName()
@@ -272,7 +278,7 @@ fun FruitDetailsTableContent(
     fruitApiViewModel: FruitApiViewModel
 ) {
     val details = fruitApiViewModel.getFruitDetailsMap()
-
+    // Card to show the details of the fruit
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -319,7 +325,7 @@ fun GenAISection(
     nutriCoachTipViewModel: NutriCoachTipViewModel,
     genAIViewModel: GenAIViewModel = viewModel()
 ) {
-    var showModal = rememberSaveable { mutableStateOf(false) }
+    val showModal = rememberSaveable { mutableStateOf(false) }
     val prompt = nutriCoachTipViewModel.generatePrompt()
     val uiState = genAIViewModel.uiState
         .observeAsState()
@@ -335,6 +341,7 @@ fun GenAISection(
             modifier = Modifier.fillMaxWidth(0.8f),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Button to generate response
             Button(
                 onClick = {
                     genAIViewModel.sendPrompt(prompt)
@@ -353,6 +360,7 @@ fun GenAISection(
                 )
             }
 
+            // Button to show all the tips
             Button(
                 onClick = { showModal.value = true },
                 modifier = Modifier.fillMaxWidth(),
@@ -403,6 +411,8 @@ fun GenAIResponseContent(
             timeAdded = formattedTime,
         )
     )
+
+    // Response of the GenAI
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -451,11 +461,11 @@ fun ShowTipsContent(
     nutriCoachTipViewModel: NutriCoachTipViewModel,
     showModal: MutableState<Boolean>
 ) {
-    Log.d("SHOW", "${showModal.value}")
     if (showModal.value) {
         val allTips = nutriCoachTipViewModel.allTips
             .observeAsState().value
 
+        // Modal
         AlertDialog(
             onDismissRequest = { showModal.value = false },
             dismissButton = {

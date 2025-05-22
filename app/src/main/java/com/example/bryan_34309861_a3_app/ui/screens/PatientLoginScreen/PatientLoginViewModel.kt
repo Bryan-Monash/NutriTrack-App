@@ -10,12 +10,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.bryan_34309861_a3_app.AppDashboardScreen
 import com.example.bryan_34309861_a3_app.data.util.AuthManager
 import com.example.bryan_34309861_a3_app.data.database.Patient
 import com.example.bryan_34309861_a3_app.data.repository.PatientRepository
 import kotlinx.coroutines.launch
+import java.security.MessageDigest
 
 class PatientLoginViewModel(context: Context): ViewModel() {
     /**
@@ -131,9 +131,9 @@ class PatientLoginViewModel(context: Context): ViewModel() {
             Toast.makeText(context, "Patient does not have a password", Toast.LENGTH_SHORT).show()
         }
 
-        val isPasswordCorrect = BCrypt.verifyer()
-            .verify(password.toCharArray(), hashedPassword).verified
-        return if (!isPasswordCorrect) {
+        val hashedInput = MessageDigest.getInstance("SHA-256")
+            .digest(password.toByteArray()).joinToString("") { "%02x".format(it) }
+        return if (hashedInput != hashedPassword) {
             {
                 Toast.makeText(context, "Password is incorrect", Toast.LENGTH_SHORT).show()
             }

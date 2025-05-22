@@ -60,15 +60,13 @@ fun RegisterScreen(
     )
     val patientId = registerViewModel.patientIdPlaceholder
     val phoneNumber = registerViewModel.phoneNumberPlaceholder
-    val patientName = registerViewModel.patientNamePlaceholder
-    val password = registerViewModel.passwordPlaceholder
-    val confirmPassword = registerViewModel.confirmPasswordPlaceholder
 
     val allUnregisteredPatients = registerViewModel.getAllUnregisteredPatient()
 
     val expanded = registerViewModel.expanded
-    val passwordVisible = registerViewModel.passwordVisible
-    val confirmPasswordVisible = registerViewModel.confirmPasswordVisible
+
+    val isVerified = registerViewModel.isVerified
+
     val verticalScroll = rememberScrollState()
 
     Column(
@@ -99,13 +97,17 @@ fun RegisterScreen(
         )
 
         ExposedDropdownMenuBox(
-            expanded = expanded.value,
-            onExpandedChange = { expanded.value = !expanded.value },
+            expanded = if (!isVerified.value) expanded.value else false, // prevents it from expanding
+            onExpandedChange = {
+                if (!isVerified.value) {
+                    expanded.value = !expanded.value
+                }
+            },
             modifier = Modifier.fillMaxWidth(0.85f)
         ) {
             OutlinedTextField(
                 value = patientId.value,
-                onValueChange = {  },
+                onValueChange = { },
                 label = { Text(stringResource(R.string.patientIdLabel), fontSize = 14.sp) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -114,130 +116,161 @@ fun RegisterScreen(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
                 },
                 readOnly = true,
+                enabled = !isVerified.value,
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                 singleLine = true
             )
-            ExposedDropdownMenu(
-                expanded = expanded.value,
-                onDismissRequest = {
-                    expanded.value = false
-                },
-            ) {
-                allUnregisteredPatients.forEach { patient ->
-                    DropdownMenuItem(
-                        text = { Text(patient.patientId) },
-                        onClick = {
-                            patientId.value = patient.patientId
-                            registerViewModel.getPatientById(patientId.value)
-                            expanded.value = !expanded.value
-                        }
-                    )
+            if (!isVerified.value) {
+                ExposedDropdownMenu(
+                    expanded = expanded.value,
+                    onDismissRequest = {
+                        expanded.value = false
+                    },
+                ) {
+                    allUnregisteredPatients.forEach { patient ->
+                        DropdownMenuItem(
+                            text = { Text(patient.patientId) },
+                            onClick = {
+                                patientId.value = patient.patientId
+                                registerViewModel.getPatientById(patientId.value)
+                                expanded.value = !expanded.value
+                            }
+                        )
+                    }
                 }
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(0.85f),
-            value = patientName.value,
-            onValueChange = { patientName.value = it },
-            label = { Text("Enter Name", fontSize = 14.sp) },
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(0.85f),
             value = phoneNumber.value,
             onValueChange = { phoneNumber.value = it },
+            enabled = !isVerified.value,
             label = { Text("Phone Number", fontSize = 14.sp) },
             singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            value = password.value,
-            onValueChange = { password.value = it },
-            label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
-            visualTransformation = if (passwordVisible.value) VisualTransformation.None
-                                    else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (passwordVisible.value) Icons.Default.Visibility
-                                        else Icons.Default.VisibilityOff
-                val description = if (passwordVisible.value) "Hide password"
-                                        else "Show password"
-                IconButton(
-                    onClick = { passwordVisible.value = !passwordVisible.value }
-                ) {
-                    Icon(imageVector = image, contentDescription = description)
+
+        if (!isVerified.value) {
+            Button(
+                onClick = {
+                    val verified = registerViewModel.verifyPatient(phoneNumber.value, context)
+                    isVerified.value = verified
                 }
-            },
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            value = confirmPassword.value,
-            onValueChange = { confirmPassword.value = it },
-            label = { Text("Confirm Password", fontSize = 14.sp) },
-            visualTransformation = if (confirmPasswordVisible.value) VisualTransformation.None
-                                    else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (confirmPasswordVisible.value) Icons.Default.Visibility
-                                        else Icons.Default.VisibilityOff
-                val description = if (confirmPasswordVisible.value) "Hide password"
-                                        else "Show password"
-                IconButton(
-                    onClick = { confirmPasswordVisible.value = !confirmPasswordVisible.value }
-                ) {
-                    Icon(imageVector = image, contentDescription = description)
-                }
-            },
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(12.dp))
+            ) {
+                Text("Verify Identity")
+            }
+        } else {
+            RegisterField(context, navController, registerViewModel)
+        }
+    }
+}
+
+@Composable
+fun RegisterField(
+    context: Context,
+    navController: NavHostController,
+    registerViewModel: RegisterViewModel
+) {
+    val patientName = registerViewModel.patientNamePlaceholder
+    val password = registerViewModel.passwordPlaceholder
+    val confirmPassword = registerViewModel.confirmPasswordPlaceholder
+
+    val passwordVisible = registerViewModel.passwordVisible
+    val confirmPasswordVisible = registerViewModel.confirmPasswordVisible
+
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(0.85f),
+        value = patientName.value,
+        onValueChange = { patientName.value = it },
+        label = { Text("Enter Name", fontSize = 14.sp) },
+        singleLine = true
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(0.85f),
+        value = password.value,
+        onValueChange = { password.value = it },
+        label = { Text(stringResource(R.string.patientPasswordLabel), fontSize = 14.sp) },
+        visualTransformation = if (passwordVisible.value) VisualTransformation.None
+                                else PasswordVisualTransformation(),
+        trailingIcon = {
+            val image = if (passwordVisible.value) Icons.Default.Visibility
+                                    else Icons.Default.VisibilityOff
+            val description = if (passwordVisible.value) "Hide password"
+                                    else "Show password"
+            IconButton(
+                onClick = { passwordVisible.value = !passwordVisible.value }
+            ) {
+                Icon(imageVector = image, contentDescription = description)
+            }
+        },
+        singleLine = true
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(0.85f),
+        value = confirmPassword.value,
+        onValueChange = { confirmPassword.value = it },
+        label = { Text("Confirm Password", fontSize = 14.sp) },
+        visualTransformation = if (confirmPasswordVisible.value) VisualTransformation.None
+                                else PasswordVisualTransformation(),
+        trailingIcon = {
+            val image = if (confirmPasswordVisible.value) Icons.Default.Visibility
+                                    else Icons.Default.VisibilityOff
+            val description = if (confirmPasswordVisible.value) "Hide password"
+                                    else "Show password"
+            IconButton(
+                onClick = { confirmPasswordVisible.value = !confirmPasswordVisible.value }
+            ) {
+                Icon(imageVector = image, contentDescription = description)
+            }
+        },
+        singleLine = true
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    Text(
+        stringResource(R.string.loginDisclaimer),
+        textAlign = TextAlign.Center,
+        fontSize = 12.sp,
+        lineHeight = 20.sp
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    Button(
+        onClick = registerViewModel.validatePatient(
+                patientName.value,
+                password.value,
+                confirmPassword.value,
+                context,
+                navController
+            ),
+        modifier = Modifier
+            .padding(top = 24.dp)
+            .fillMaxWidth(0.85f)
+    ) {
+        Text("Register")
+    }
+    Spacer(modifier = Modifier.height(12.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
         Text(
-            stringResource(R.string.loginDisclaimer),
-            textAlign = TextAlign.Center,
-            fontSize = 12.sp,
-            lineHeight = 20.sp
+            text = "Already have an account?",
+            style = MaterialTheme.typography.bodyMedium
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = registerViewModel.validatePatient(
-                    patientName.value,
-                    phoneNumber.value,
-                    password.value,
-                    confirmPassword.value,
-                    context,
-                    navController
-                ),
-            modifier = Modifier
-                .padding(top = 24.dp)
-                .fillMaxWidth(0.85f)
-        ) {
-            Text("Register")
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Already have an account?",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Login",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline
-                ),
-                modifier = Modifier.clickable {
-                    navController.navigate(AppDashboardScreen.PatientLogin.route)
-                }
-            )
-        }
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "Login",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline
+            ),
+            modifier = Modifier.clickable {
+                navController.navigate(AppDashboardScreen.PatientLogin.route)
+            }
+        )
     }
 }

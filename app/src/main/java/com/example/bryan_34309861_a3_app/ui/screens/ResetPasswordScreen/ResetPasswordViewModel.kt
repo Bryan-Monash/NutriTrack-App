@@ -9,11 +9,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.bryan_34309861_a3_app.AppDashboardScreen
 import com.example.bryan_34309861_a3_app.data.database.Patient
 import com.example.bryan_34309861_a3_app.data.repository.PatientRepository
 import kotlinx.coroutines.launch
+import java.security.MessageDigest
 
 class ResetPasswordViewModel(context: Context) : ViewModel() {
     /**
@@ -175,8 +175,8 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
                 }
 
                 else -> {
-                    val hashedPassword = BCrypt.withDefaults()
-                        .hashToString(12, newPassword.toCharArray())
+                    val hashedPassword = MessageDigest.getInstance("SHA-256")
+                        .digest(newPassword.toByteArray()).joinToString("") { "%02x".format(it) }
                     updatePatientPassword(hashedPassword)
                     Toast.makeText(context, "Password changed successfully", Toast.LENGTH_SHORT).show()
                     navController.navigate(AppDashboardScreen.PatientLogin.route)

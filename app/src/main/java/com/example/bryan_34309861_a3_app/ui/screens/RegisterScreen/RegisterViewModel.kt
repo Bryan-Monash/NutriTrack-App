@@ -13,7 +13,7 @@ import com.example.bryan_34309861_a3_app.AppDashboardScreen
 import com.example.bryan_34309861_a3_app.data.database.Patient
 import com.example.bryan_34309861_a3_app.data.repository.PatientRepository
 import kotlinx.coroutines.launch
-import at.favre.lib.crypto.bcrypt.BCrypt
+import java.security.MessageDigest
 
 class RegisterViewModel(context: Context): ViewModel() {
     /**
@@ -53,6 +53,11 @@ class RegisterViewModel(context: Context): ViewModel() {
      */
     val passwordVisible = mutableStateOf(false)
     val confirmPasswordVisible = mutableStateOf(false)
+
+    /**
+     * Public mutable booleans that serve as the state of the patient being verified
+     */
+    val isVerified = mutableStateOf(false)
 
     /**
      * Initialize the ViewModel by loading the list of all patients from the repository
@@ -110,6 +115,59 @@ class RegisterViewModel(context: Context): ViewModel() {
     }
 
     /**
+     * Verifies if the patient provided information is same as in the database
+     *
+     * @param phoneNumber the phoneNumber of the patient
+     * @param context The Android context used to show Toast messages.
+     */
+    fun verifyPatient(phoneNumber: String, context: Context): Boolean {
+        return when {
+            _thePatient.value == null -> {
+                Toast.makeText(context, "Please select a valid Patient ID", Toast.LENGTH_SHORT)
+                    .show()
+                false
+            }
+            _thePatient.value?.patientPassword != "" -> {
+                Toast.makeText(context, "Patient is already registered", Toast.LENGTH_SHORT)
+                    .show()
+                false
+            }
+            _thePatient.value?.phoneNumber != phoneNumber -> {
+                Toast.makeText(context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
+                false
+            }
+            else -> {
+                Toast.makeText(context, "Successfully verified", Toast.LENGTH_SHORT).show()
+                true
+            }
+        }
+    }
+
+    /**
+     * Formats a full name by removing extra spaces and ensuring
+     * only a single space separates each word.
+     *
+     * Example:
+     * "  John    Doe   Smith " -> "John Doe Smith"
+     *
+     * @param name The raw input name string.
+     * @return The formatted name.
+     */
+    private fun formatName(name: String): String {
+        return name.trim().split(Regex("\\s+")).joinToString(" ")
+    }
+
+    /**
+     * Validates that the password does not contain any spaces or newline characters.
+     *
+     * @param password The password to validate.
+     * @return `true` if the password is valid, `false` otherwise.
+     */
+    private fun passwordValidator(password: String): Boolean {
+        return !password.contains(Regex("\\s")) // \s matches any whitespace (space, tab, newline, etc.)
+    }
+
+    /**
      * Validates patient registration input and returns a lambda that performs the validation when invoked.
      *
      * This function is used during patient account setup (first-time login) and performs the following checks:
@@ -137,7 +195,6 @@ class RegisterViewModel(context: Context): ViewModel() {
      */
     fun validatePatient(
         patientName: String,
-        phoneNumber: String,
         password: String,
         confirmPassword: String,
         context: Context,
@@ -145,20 +202,6 @@ class RegisterViewModel(context: Context): ViewModel() {
     ): () -> Unit {
         return {
             when {
-                _thePatient.value == null -> {
-                    Toast.makeText(context, "Please select a valid Patient ID", Toast.LENGTH_SHORT)
-                        .show()
-                }
-
-                _thePatient.value?.patientPassword != "" -> {
-                    Toast.makeText(context, "Patient is already registered", Toast.LENGTH_SHORT)
-                        .show()
-                }
-
-                _thePatient.value?.phoneNumber != phoneNumber -> {
-                    Toast.makeText(context, "Incorrect Phone Number", Toast.LENGTH_SHORT).show()
-                }
-
                 password.isEmpty() -> {
                     Toast.makeText(context, "Password field cannot be empty", Toast.LENGTH_SHORT).show()
                 }
@@ -172,8 +215,8 @@ class RegisterViewModel(context: Context): ViewModel() {
                 }
 
                 else -> {
-                    val hashedPassword = BCrypt.withDefaults()
-                        .hashToString(12, password.toCharArray())
+                    val hashedPassword = MessageDigest.getInstance("SHA-256")
+                        .digest(password.toByteArray()).joinToString("") { "%02x".format(it) }
                     val formattedName = formatName(patientName)
                     updatePatientDetails(formattedName, hashedPassword)
                     Toast.makeText(context, "Patient successfully registered", Toast.LENGTH_SHORT).show()
@@ -181,30 +224,6 @@ class RegisterViewModel(context: Context): ViewModel() {
                 }
             }
         }
-    }
-
-    /**
-     * Formats a full name by removing extra spaces and ensuring
-     * only a single space separates each word.
-     *
-     * Example:
-     * "  John    Doe   Smith " -> "John Doe Smith"
-     *
-     * @param name The raw input name string.
-     * @return The formatted name.
-     */
-    private fun formatName(name: String): String {
-        return name.trim().split(Regex("\\s+")).joinToString(" ")
-    }
-
-    /**
-     * Validates that the password does not contain any spaces or newline characters.
-     *
-     * @param password The password to validate.
-     * @return `true` if the password is valid, `false` otherwise.
-     */
-    private fun passwordValidator(password: String): Boolean {
-        return !password.contains(Regex("\\s")) // \s matches any whitespace (space, tab, newline, etc.)
     }
 
     // Factory class for creating instances of RegisterViewModel

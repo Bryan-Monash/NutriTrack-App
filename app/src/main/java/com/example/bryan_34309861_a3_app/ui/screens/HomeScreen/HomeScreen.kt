@@ -83,6 +83,7 @@ fun HomeScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
+            // Greetings User
             Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = "Hello, ${homeViewModel.getPatientName()}",
@@ -94,6 +95,7 @@ fun HomeScreenContent(
         }
 
         item {
+            // Edit questionnaire
             Row(
                 modifier = Modifier.fillMaxWidth(0.9f),
                 verticalAlignment = Alignment.CenterVertically,
@@ -118,6 +120,7 @@ fun HomeScreenContent(
         }
 
         item {
+            // Image
             Image(
                 painter = painterResource(R.drawable.homescreen),
                 contentDescription = "plateOfFood",
@@ -133,6 +136,7 @@ fun HomeScreenContent(
         }
 
         item {
+            // navigate to insight screen
             Row(
                 modifier = Modifier.fillMaxWidth(0.9f),
                 verticalAlignment = Alignment.CenterVertically,
@@ -159,6 +163,7 @@ fun HomeScreenContent(
         }
 
         item {
+            // Total score of patient
             Row(
                 modifier = Modifier.fillMaxWidth(0.9f),
                 verticalAlignment = Alignment.CenterVertically
@@ -174,6 +179,7 @@ fun HomeScreenContent(
         }
 
         item {
+            // Explanation of food quality score
             Card(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)

@@ -46,9 +46,6 @@ dependencies {
     // icon
     implementation ("androidx.compose.material:material-icons-extended")
 
-    // hashing
-    implementation("at.favre.lib:bcrypt:0.9.0")
-
     // nav
     implementation("androidx.navigation:navigation-compose:2.8.9")
 

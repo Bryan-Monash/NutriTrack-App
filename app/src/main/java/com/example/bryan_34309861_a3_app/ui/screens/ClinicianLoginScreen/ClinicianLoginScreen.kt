@@ -54,6 +54,7 @@ fun ClinicianLoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
+            // Title for the Clinician Login Screen
             Text(
                 text = stringResource(R.string.clinicianLogin),
                 modifier = Modifier
@@ -65,6 +66,7 @@ fun ClinicianLoginScreen(
         }
 
         item {
+            // Text field for user input
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
@@ -86,6 +88,7 @@ fun ClinicianLoginScreen(
         }
 
         item {
+            // Button to verify the key and navigate to Clinician Dashboard
             Button(
                 onClick = clinicianLoginViewModel.validateKey(context, navController),
                 modifier = Modifier

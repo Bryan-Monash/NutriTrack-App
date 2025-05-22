@@ -63,6 +63,7 @@ fun ClinicianDashboardScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
+            // Title of the screen
             Text(
                 text = "Clinician Dashboard",
                 style = MaterialTheme.typography.titleLarge,
@@ -72,6 +73,7 @@ fun ClinicianDashboardScreen(
         }
 
         item {
+            // The average HEIFA score of male and female
             HEIFARow(label = "Average HEIFA (Male)", value = maleScore.value ?: 0f)
             Spacer(modifier = Modifier.height(8.dp))
             HEIFARow(label = "Average HEIFA (Female)", value = femaleScore.value ?: 0f)
@@ -83,6 +85,7 @@ fun ClinicianDashboardScreen(
         }
 
         item {
+            // Data Analysis section with GenAI
             DataAnalysisSection(context, dashboardViewModel)
         }
         item {
@@ -133,6 +136,7 @@ fun DataAnalysisSection(
     val uiState = genAIViewModel.uiState
         .observeAsState()
 
+    // Button to send prompt and get response from AI
     Button(
         onClick = { genAIViewModel.sendPrompt(prompt) },
         modifier = Modifier
@@ -189,6 +193,7 @@ fun DataAnalysisContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         responses.forEach { (title, description) ->
+            // Contents of the GenAI response
             Card(
                 modifier = Modifier
                     .fillMaxWidth()

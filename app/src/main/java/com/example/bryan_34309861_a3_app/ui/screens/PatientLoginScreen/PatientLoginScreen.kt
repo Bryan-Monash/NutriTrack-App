@@ -61,7 +61,7 @@ fun PatientLoginScreen(
     val password = patientLoginViewModel.patientPasswordPlaceholder
     val allRegisteredPatients = patientLoginViewModel.getAllRegisteredPatient()
     val expanded = patientLoginViewModel.expanded
-    var passwordVisible = patientLoginViewModel.passwordVisible
+    val passwordVisible = patientLoginViewModel.passwordVisible
 
     LazyColumn(
         modifier = Modifier
@@ -70,6 +70,7 @@ fun PatientLoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
+            // Arrow to go back to Welcome Screen
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -87,6 +88,7 @@ fun PatientLoginScreen(
         }
 
         item {
+            // Title of Patient Login Screen
             Text(
                 text = stringResource(R.string.patientLogin),
                 modifier = Modifier.padding(bottom = 24.dp),
@@ -95,6 +97,7 @@ fun PatientLoginScreen(
         }
 
         item {
+            // Dropdown menu for registered patient id
             ExposedDropdownMenuBox(
                 expanded = expanded.value,
                 onExpandedChange = { expanded.value = !expanded.value },
@@ -135,6 +138,7 @@ fun PatientLoginScreen(
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
         item {
+            // Text field for password input
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(0.85f),
                 value = password.value,
@@ -160,6 +164,7 @@ fun PatientLoginScreen(
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
         item {
+            // Login Disclaimer
             Text(
                 stringResource(R.string.loginDisclaimer),
                 textAlign = TextAlign.Center,
@@ -171,6 +176,7 @@ fun PatientLoginScreen(
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
         item {
+            // Button to verify user
             Button(
                 onClick = patientLoginViewModel.isAuthorized(
                     patientId.value,
@@ -189,6 +195,7 @@ fun PatientLoginScreen(
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
         item {
+            // Text that links to Register Screen
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -215,6 +222,7 @@ fun PatientLoginScreen(
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
         item {
+            // Text that links to Reset Password Screen
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

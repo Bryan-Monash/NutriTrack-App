@@ -109,6 +109,7 @@ fun QuestionnaireScreenContent(
         horizontalAlignment = Alignment.Start
     ) {
         item {
+            // Checkbox section
             CheckBoxQuestion(questionnaireViewModel)
         }
 
@@ -117,6 +118,7 @@ fun QuestionnaireScreenContent(
         }
 
         item {
+            // Persona section
             Persona(questionnaireViewModel)
         }
 
@@ -125,10 +127,12 @@ fun QuestionnaireScreenContent(
         }
 
         item {
+            // Timings section
             Timings(questionnaireViewModel)
         }
 
         item {
+            // Button to save questionnaire
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -151,8 +155,7 @@ fun CheckBoxQuestion(
 ) {
     val categories = questionnaireViewModel.getFoodCategories()
 
-    val checkboxStates = questionnaireViewModel.foodIntake
-        .observeAsState().value?.checkboxes ?: List(categories.size) { false }
+    val checkboxStates = questionnaireViewModel.checkboxPlaceholder.value
 
     Text(
         text = stringResource(R.string.foodIntake),
@@ -178,9 +181,7 @@ fun CheckBoxQuestion(
                         Checkbox(
                             checked = checkboxStates[index],
                             onCheckedChange = {
-                                questionnaireViewModel.updateCheckbox(
-                                    index = index
-                                )
+                                checkboxStates[index] = it
                             }
                         )
                         Text(
@@ -205,8 +206,7 @@ fun Persona(
     val modalStates = questionnaireViewModel.personaModalStates
     val expanded = questionnaireViewModel.personaExpanded
     val personaList = questionnaireViewModel.getPersonaList()
-    val persona = questionnaireViewModel.foodIntake
-        .observeAsState().value?.persona
+    val persona = questionnaireViewModel.personaPlaceholder
 
     Text(
         text = "Your Persona",
@@ -267,7 +267,7 @@ fun Persona(
                 .fillMaxWidth()
                 .height(45.dp)
                 .menuAnchor(),
-            value = persona ?: "",
+            value = persona.value,
             onValueChange = {},
             textStyle = TextStyle(fontSize = 12.sp),
             trailingIcon = {
@@ -285,9 +285,7 @@ fun Persona(
                 DropdownMenuItem(
                     text = { Text(text = option) },
                     onClick = {
-                        questionnaireViewModel.updatePersona(
-                            persona = option
-                        )
+                        persona.value = option
                         expanded.value = false
                     }
                 )
@@ -380,19 +378,14 @@ fun InputRow(
     questionnaireViewModel: QuestionnaireViewModel,
     timeType: String
 ) {
-    val aFoodIntake = questionnaireViewModel.foodIntake
-        .observeAsState()
     val initialTime = when (timeType) {
-        "eat" -> aFoodIntake.value?.eatTime?: ""
-        "sleep" -> aFoodIntake.value?.sleepTime?: ""
-        "wakeUp" -> aFoodIntake.value?.wakeUpTime?: ""
-        else -> "No Timing found"
+        "eat" -> questionnaireViewModel.eatTimePlaceholder
+        "sleep" -> questionnaireViewModel.sleepTimePlaceholder
+        else -> questionnaireViewModel.wakeUpTimePlaceholder
     }
 
-    val timeValue = remember(initialTime) { mutableStateOf(initialTime) }
-
     val mTimePickerDialog =
-        TimePickerFun(timeValue, timeType, questionnaireViewModel)
+        TimePickerFun(initialTime)
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -413,7 +406,7 @@ fun InputRow(
                     .clickable { mTimePickerDialog.show() }
             ) {
                 ReadOnlyTimeBox(
-                    timeText = timeValue.value,
+                    timeText = initialTime.value,
                     onIconClick = {
                         mTimePickerDialog.show()
                     }
@@ -425,9 +418,7 @@ fun InputRow(
 
 @Composable
 fun TimePickerFun(
-    mTime: MutableState<String>,
-    timeType: String,
-    questionnaireViewModel: QuestionnaireViewModel,
+    mTime: MutableState<String>
 ): TimePickerDialog {
     val mContext = LocalContext.current
     val mCalendar = Calendar.getInstance()
@@ -442,10 +433,6 @@ fun TimePickerFun(
         mContext,
         { _, mHour: Int, mMinute: Int ->
             mTime.value = String.format("%02d:%02d", mHour, mMinute)
-            questionnaireViewModel.updateTime(
-                timeType = timeType,
-                time = mTime.value
-            )
         }, mHour, mMinute, false
     )
 }

@@ -153,14 +153,12 @@ fun ResetPasswordScreen(
             Button(
                 onClick = {
                     val verified = viewModel.verifyPatient(phoneNumber.value, context)
-                    isVerified.value= verified
+                    isVerified.value = verified
                 }
             ) {
                 Text("Verify Identity")
             }
-        }
-
-        if (isVerified.value) {
+        } else {
             ResetPasswordField(viewModel, navController, context)
         }
     }
