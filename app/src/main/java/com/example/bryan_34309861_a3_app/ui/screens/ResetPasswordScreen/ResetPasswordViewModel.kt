@@ -107,7 +107,7 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
      */
     private fun updatePatientPassword(password: String) {
         viewModelScope.launch {
-            repository.updatePatientDetails(_thePatient.value!!, _thePatient.value!!.name, password)
+            repository.updatePatientPassword(_thePatient.value!!, password)
             loadPatients()
         }
     }

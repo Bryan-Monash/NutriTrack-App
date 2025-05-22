@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.bryan_34309861_a3_app.AppDashboardScreen
+import com.example.bryan_34309861_a3_app.R
 import com.example.bryan_34309861_a3_app.data.util.AuthManager
 import com.example.bryan_34309861_a3_app.data.database.FoodIntake
 import com.example.bryan_34309861_a3_app.data.repository.FoodIntakeRepository
@@ -182,6 +183,29 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
     }
 
     /**
+     * Returns persona information (image, description, and title) for a given index.
+     *
+     * Each persona represents a user archetype in the nutrition app. The function maps
+     * the index to a specific `PersonaInfo` object containing:
+     * - A drawable resource for the persona image
+     * - A string resource ID for the persona description
+     * - A title for the persona
+     *
+     * @param index The index of the persona (0 to 5).
+     * @return A [PersonaInfo] object containing details of the selected persona.
+     * @throws IllegalArgumentException if the index is out of the expected range.
+     */
+    fun getPersonaInfo(index: Int): PersonaInfo = when (index) {
+        0 -> PersonaInfo(R.drawable.persona_1, R.string.healthDevoteeDesc, "Health Devotee")
+        1 -> PersonaInfo(R.drawable.persona_2, R.string.mindfulEaterDesc, "Mindful Eater")
+        2 -> PersonaInfo(R.drawable.persona_3, R.string.wellnessStriverDesc, "Wellness Striver")
+        3 -> PersonaInfo(R.drawable.persona_4, R.string.balanceSeekerDesc, "Balance Seeker")
+        4 -> PersonaInfo(R.drawable.persona_5, R.string.healthProcrastinatorDesc, "Health Procrastinator")
+        5 -> PersonaInfo(R.drawable.persona_6, R.string.foodCarefreeDesc, "Food Carefree")
+        else -> error("No image found")
+    }
+
+    /**
      * Validates the user's responses in the food intake questionnaire and provides feedback.
      *
      * This function performs the following checks:
@@ -204,17 +228,18 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      */
     fun validateQuestionnaire(context: Context, navController: NavHostController): () -> Unit {
         return {
-            val checkboxes = _foodIntake.value?.checkboxes
-            val persona = _foodIntake.value?.persona
-            val sleepTime = _foodIntake.value?.sleepTime
-            val eatTime = _foodIntake.value?.eatTime
-            val wakeUpTime = _foodIntake.value?.wakeUpTime
+            val checkboxesValid = checkboxPlaceholder.value.any { it }
 
-            val checkboxesValid = checkboxes?.any { it }?: false
+            val personaValid = personaPlaceholder.value.isNotEmpty()
 
-            val personaValid = !persona.isNullOrEmpty()
+            val sleepTime = sleepTimePlaceholder.value
+            val eatTime = eatTimePlaceholder.value
+            val wakeUpTime = wakeUpTimePlaceholder.value
 
-            val timeValid = !sleepTime.isNullOrEmpty() && !eatTime.isNullOrEmpty() && !wakeUpTime.isNullOrEmpty()
+
+            val timeValid = sleepTime.isNotEmpty() &&
+                    eatTime.isNotEmpty() &&
+                    wakeUpTime.isNotEmpty()
 
             val timesDifferent = sleepTime != eatTime && sleepTime != wakeUpTime && eatTime != wakeUpTime
             val eatTimeOptimal = if (timeValid) {

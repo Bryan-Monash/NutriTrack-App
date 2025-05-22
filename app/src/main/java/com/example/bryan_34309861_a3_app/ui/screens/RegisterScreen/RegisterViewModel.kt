@@ -109,16 +109,26 @@ class RegisterViewModel(context: Context): ViewModel() {
      */
     private fun updatePatientDetails(name: String, password: String) {
         viewModelScope.launch {
-            repository.updatePatientDetails(_thePatient.value!!, name, password)
+            repository.updatePatientName(_thePatient.value!!, name)
+            repository.updatePatientPassword(_thePatient.value!!, password)
             loadPatients()
         }
     }
 
     /**
-     * Verifies if the patient provided information is same as in the database
+     * Verifies if the patient-provided phone number matches the record in the database,
+     * and whether the patient is eligible for registration.
      *
-     * @param phoneNumber the phoneNumber of the patient
-     * @param context The Android context used to show Toast messages.
+     * The verification checks the following:
+     * 1. If a patient is selected (`_thePatient` is not null).
+     * 2. If the patient is not already registered (password is blank).
+     * 3. If the provided phone number matches the patient's phone number.
+     *
+     * Shows appropriate Toast messages based on each condition.
+     *
+     * @param phoneNumber The phone number input by the user.
+     * @param context The Android [Context] used to display Toast messages.
+     * @return `true` if the verification passes, `false` otherwise.
      */
     fun verifyPatient(phoneNumber: String, context: Context): Boolean {
         return when {
@@ -147,9 +157,6 @@ class RegisterViewModel(context: Context): ViewModel() {
      * Formats a full name by removing extra spaces and ensuring
      * only a single space separates each word.
      *
-     * Example:
-     * "  John    Doe   Smith " -> "John Doe Smith"
-     *
      * @param name The raw input name string.
      * @return The formatted name.
      */
@@ -168,30 +175,24 @@ class RegisterViewModel(context: Context): ViewModel() {
     }
 
     /**
-     * Validates patient registration input and returns a lambda that performs the validation when invoked.
+     * Validates patient input during registration.
      *
-     * This function is used during patient account setup (first-time login) and performs the following checks:
-     * 1. Ensures that a valid patient record (`_thePatient`) is selected.
-     * 2. Ensures the patient has not already registered (i.e., has no password).
-     * 3. Verifies that the entered phone number matches the one in the patient record.
-     * 4. Verifies that the entered password and confirmation password match.
+     * The validation checks the following:
+     * - Name is not blank, is at least 2 characters, and contains only valid characters.
+     * - Password is not empty, contains no spaces, and matches the confirmation.
      *
-     * If all validations pass:
-     * - The password is hashed using BCrypt with a cost factor of 12.
-     * - The patient's name and hashed password are updated via `updatePatientDetails`.
-     * - Navigation proceeds to the Patient Login screen.
+     * On successful validation:
+     * - Hashes the password using SHA-256.
+     * - Formats the name properly.
+     * - Updates the patient record.
+     * - Navigates to the login screen and shows a success message.
      *
-     * If any validation fails, a Toast is shown explaining the error.
-     *
-     * This method is typically used as an `onClick` listener for a "Register" button.
-     *
-     * @param patientName The name entered by the patient for registration.
-     * @param phoneNumber The phone number used for verification against existing data.
-     * @param password The password the user wants to set.
-     * @param confirmPassword The confirmation of the password to ensure correctness.
-     * @param context The context used to show Toast messages.
-     * @param navController The navigation controller used to redirect to the login screen after success.
-     * @return A lambda function that executes the validation and updates patient data when invoked.
+     * @param patientName The name entered by the user.
+     * @param password The password entered by the user.
+     * @param confirmPassword The confirmation of the password.
+     * @param context The Android [Context] used to show Toast messages.
+     * @param navController The [NavHostController] to navigate between screens.
+     * @return A lambda function that performs the validation when invoked.
      */
     fun validatePatient(
         patientName: String,
@@ -202,6 +203,23 @@ class RegisterViewModel(context: Context): ViewModel() {
     ): () -> Unit {
         return {
             when {
+                patientName.isBlank() -> {
+                    Toast.makeText(context, "Name cannot be blank", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                patientName.length < 2 -> {
+                    Toast.makeText(context, "Name must be at least length 2", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                !patientName.all {
+                    it.isLetter() || it == ' ' || it == '-' || it == '\''
+                } -> {
+                    Toast.makeText(
+                        context,
+                        "Name can only consist of letters, space, hyphens and apostrophes",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
                 password.isEmpty() -> {
                     Toast.makeText(context, "Password field cannot be empty", Toast.LENGTH_SHORT).show()
                 }

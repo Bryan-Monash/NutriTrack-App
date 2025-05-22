@@ -483,7 +483,6 @@ fun ShowTipsContent(
             confirmButton = {},
             title = { Text("All Motivational Tips") },
             text = {
-                Log.d("TIPS", "$allTips")
                 if (allTips?.isEmpty() == true) {
                     Text("No tips were generated previously")
                 } else {

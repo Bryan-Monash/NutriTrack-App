@@ -4,7 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,19 +15,34 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,6 +91,7 @@ fun InsightContent(
 ) {
     val scoreMap = insightViewModel.getPatientScore()
     val totalScore = insightViewModel.getPatientTotalScore()
+    val modalState = insightViewModel.modalState
 
     LazyColumn(
         modifier = Modifier
@@ -90,7 +109,7 @@ fun InsightContent(
             )
         }
 
-        itemsIndexed(scoreMap) { _, (label, score) ->
+        itemsIndexed(scoreMap) { index, (label, score) ->
             val info = insightViewModel.getProgressInfo(label, score)
             // Score of each category
             Column(
@@ -98,12 +117,36 @@ fun InsightContent(
                     .fillMaxWidth(0.9f)
                     .padding(8.dp)
             ) {
-                Text(
-                    text = label,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = label,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Button(
+                        onClick = {
+                            modalState[index] = true
+                        },
+                        content = {
+                            Icon(
+                                imageVector = Icons.Filled.Info,
+                                contentDescription = "Info"
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Info",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    )
+                }
                 Spacer(modifier = Modifier.height(4.dp))
+
+                CategoryModal(modalState, insightViewModel, label, index)
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -241,6 +284,65 @@ fun ProgressBarWithIndicator(
             color = indicatorFillColor,
             radius = (circleRadius - borderWidth).toPx().coerceAtLeast(0f),
             center = center
+        )
+    }
+}
+
+@Composable
+fun CategoryModal(
+    modalState: SnapshotStateList<Boolean>,
+    insightViewModel: InsightViewModel,
+    category: String,
+    index: Int
+) {
+    if (modalState[index]) {
+        val theCategory = insightViewModel.getCategoryInfo(index)
+        AlertDialog(
+            onDismissRequest = { modalState[index] = false },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    theCategory.forEach { (label, content) ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp, horizontal = 8.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(12.dp)
+                        ) {
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(
+                                        style = SpanStyle(
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    ) {
+                                        append(label)
+                                    }
+                                    append("\n$content")
+                                },
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            },
+            title = { Text("Score Breakdown")},
+            confirmButton = {},
+            dismissButton = {},
         )
     }
 }

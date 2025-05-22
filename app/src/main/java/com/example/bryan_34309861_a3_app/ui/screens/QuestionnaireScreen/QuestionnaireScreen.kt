@@ -66,8 +66,6 @@ import com.example.bryan_34309861_a3_app.R
 import com.example.bryan_34309861_a3_app.data.util.UiState
 import com.example.bryan_34309861_a3_app.ui.composables.ErrorContent
 
-data class PersonaInfo(val imageRes: Int, val descriptionRes: Int, val name: String)
-
 @Composable
 fun QuestionnaireScreen(
     navController: NavHostController,
@@ -246,7 +244,7 @@ fun Persona(
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
-                    ShowModal(modalStates, index)
+                    ShowModal(questionnaireViewModel ,modalStates, index)
                 }
             }
         }
@@ -296,11 +294,12 @@ fun Persona(
 
 @Composable
 fun ShowModal(
+    questionnaireViewModel: QuestionnaireViewModel,
     modalStates: SnapshotStateList<Boolean>,
     index: Int
 ) {
     if (modalStates[index]) {
-        val thePersona = getPersonaInfo(index)
+        val thePersona = questionnaireViewModel.getPersonaInfo(index)
         AlertDialog(
             onDismissRequest = { modalStates[index] = false },
             text = { },
@@ -343,16 +342,6 @@ fun ShowModal(
             dismissButton = {}
         )
     }
-}
-
-fun getPersonaInfo(index: Int): PersonaInfo = when (index) {
-    0 -> PersonaInfo(R.drawable.persona_1, R.string.healthDevoteeDesc, "Health Devotee")
-    1 -> PersonaInfo(R.drawable.persona_2, R.string.mindfulEaterDesc, "Mindful Eater")
-    2 -> PersonaInfo(R.drawable.persona_3, R.string.wellnessStriverDesc, "Wellness Striver")
-    3 -> PersonaInfo(R.drawable.persona_4, R.string.balanceSeekerDesc, "Balance Seeker")
-    4 -> PersonaInfo(R.drawable.persona_5, R.string.healthProcrastinatorDesc, "Health Procrastinator")
-    5 -> PersonaInfo(R.drawable.persona_6, R.string.foodCarefreeDesc, "Food Carefree")
-    else -> error("No image found")
 }
 
 @Composable

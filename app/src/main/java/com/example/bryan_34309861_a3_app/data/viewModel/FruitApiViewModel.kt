@@ -99,7 +99,13 @@ class FruitApiViewModel(context: Context): ViewModel() {
      * @return true is the fruit score is greater than 5
      */
     fun isFruitScoreOptimal() : Boolean {
-        return ((_thePatient.value?.fruitsScore ?: 0f) > 5f)
+        val fruitServeSize = _thePatient.value?.fruitServeSize?: 0f
+        val fruitVarietyScore = _thePatient.value?.fruitVarietyScore?: 0f
+
+        if (fruitServeSize >= 1f && fruitVarietyScore >= 2.5f) {
+            return true
+        }
+        return false
     }
 
     /**

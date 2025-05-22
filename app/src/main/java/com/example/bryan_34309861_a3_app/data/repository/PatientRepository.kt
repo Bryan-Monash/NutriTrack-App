@@ -20,15 +20,24 @@ class PatientRepository(context: Context) {
     }
 
     /**
-     * Updates the patient's name and password
+     * Updates the patient's password
+     *
+     * @param patient The patient to be updated
+     * @param password The password that the patient set
+     */
+    suspend fun updatePatientPassword(patient: Patient, password: String) {
+        patient.patientPassword = password
+        patientDao.updatePatient(patient)
+    }
+
+    /**
+     * Updates the patient's name
      *
      * @param patient The patient to be updated
      * @param name The name of the patient
-     * @param password The password that the patient set
      */
-    suspend fun updatePatientDetails(patient: Patient, name: String, password: String) {
+    suspend fun updatePatientName(patient: Patient, name: String) {
         patient.name = name
-        patient.patientPassword = password
         patientDao.updatePatient(patient)
     }
 

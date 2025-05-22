@@ -1,6 +1,7 @@
 package com.example.bryan_34309861_a3_app.ui.screens.SettingsScreen
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,17 +17,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.SupervisorAccount
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -54,8 +60,12 @@ fun SettingsScreen(
     val settingsViewModel: SettingsViewModel = viewModel(
         factory = SettingsViewModel.SettingViewModelFactory(context)
     )
-    val thePatient = settingsViewModel.thePatient.observeAsState()
+
+    val thePatient = settingsViewModel.thePatient
+        .observeAsState()
     var isDark by rememberSaveable { mutableStateOf(darkModeEnabled) }
+    val showModal = settingsViewModel.showModal
+    val newName = settingsViewModel.newName
 
     LazyColumn(
         modifier = Modifier
@@ -85,7 +95,15 @@ fun SettingsScreen(
             )
         }
 
-        item { SettingRow(icon = Icons.Default.Person, text = thePatient.value?.name ?: "") }
+        item {
+            SettingRow(
+                icon = Icons.Default.Person,
+                text = thePatient.value?.name?: "",
+                trailingIcon = Icons.Default.Edit,
+                onClick = { showModal.value = true }
+            )
+            ChangeNameModal(newName, showModal, settingsViewModel, navController, context)
+        }
         item { SettingRow(icon = Icons.Default.Phone, text = thePatient.value?.phoneNumber ?: "") }
         item { SettingRow(Icons.Default.Badge, text = thePatient.value?.patientId ?: "") }
 
@@ -138,7 +156,7 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Create,
+                        imageVector = Icons.Default.DarkMode,
                         contentDescription = "Dark Mode",
                         modifier = Modifier.size(24.dp)
                     )
@@ -198,5 +216,46 @@ fun SettingRow(
                     .size(20.dp)
             )
         }
+    }
+}
+
+@Composable
+fun ChangeNameModal(
+    newName: MutableState<String>,
+    showModal: MutableState<Boolean>,
+    settingsViewModel: SettingsViewModel,
+    navController: NavHostController,
+    context: Context
+) {
+    if (showModal.value) {
+        AlertDialog(
+            onDismissRequest = { showModal.value = false },
+            confirmButton = {
+                Button(
+                    onClick = { settingsViewModel.validateName(context, navController) }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                Text(
+                    "Cancel",
+                    modifier = Modifier
+                        .clickable { showModal.value = false }
+                        .padding(8.dp)
+                )
+            },
+            title = { Text("Edit Name") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = newName.value,
+                        onValueChange = { newName.value = it },
+                        label = { Text("Name") },
+                        singleLine = true
+                    )
+                }
+            }
+        )
     }
 }
