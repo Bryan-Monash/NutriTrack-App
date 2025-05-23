@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.bryan_34309861_a3_app"
+    namespace = "com.fit2081.bryan_34309861_a3_app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.bryan_34309861_a3_app"
+        applicationId = "com.fit2081.bryan_34309861_a3_app"
         minSdk = 35
         targetSdk = 35
         versionCode = 1
