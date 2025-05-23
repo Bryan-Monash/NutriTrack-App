@@ -79,6 +79,10 @@ class QuestionnaireViewModel(context: Context): ViewModel() {
      */
     val personaModalStates = mutableStateListOf(*Array(6) { false })
 
+    val eatTimePickerState = mutableStateOf(false)
+    val sleepTimePickerState = mutableStateOf(false)
+    val wakeUpTimePickerState = mutableStateOf(false)
+
     /**
      * Initialize the ViewModel by loading the current patient's foodIntake from the repository
      * This ensures data is available as soon as the UI starts observing.

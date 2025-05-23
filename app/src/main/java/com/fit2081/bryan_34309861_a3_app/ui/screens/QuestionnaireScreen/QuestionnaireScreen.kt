@@ -1,8 +1,8 @@
 package com.fit2081.bryan_34309861_a3_app.ui.screens.QuestionnaireScreen
 
+import TimePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
-import android.icu.util.Calendar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,7 +38,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.fit2081.bryan_34309861_a3_app.R
+import java.util.Calendar
 
 @Composable
 fun QuestionnaireScreen(
@@ -64,30 +64,14 @@ fun QuestionnaireScreen(
         factory = QuestionnaireViewModel.QuestionnaireViewModelFactory(context)
     )
 
-    val uiState = questionnaireViewModel.uiState
-        .observeAsState()
+    val eatTime = questionnaireViewModel.eatTimePlaceholder
+    val sleepTime = questionnaireViewModel.sleepTimePlaceholder
+    val wakeUpTime = questionnaireViewModel.wakeUpTimePlaceholder
 
-//    when (val state = uiState.value) {
-//        is UiState.Loading -> {
-//            QuestionnaireScreenContent(navController, questionnaireViewModel, context)
-//        }
-//        is UiState.Success -> {
-//            QuestionnaireScreenContent(navController, questionnaireViewModel, context)
-//        }
-//        is UiState.Error -> {
-//            ErrorContent(state.errorMessage)
-//        }
-//        else -> Unit
-//    }
-    QuestionnaireScreenContent(navController, questionnaireViewModel, context)
-}
+    val eatTimeDialogState = questionnaireViewModel.eatTimePickerState
+    val sleepTimeDialogState = questionnaireViewModel.sleepTimePickerState
+    val wakeUpTimeDialogState = questionnaireViewModel.wakeUpTimePickerState
 
-@Composable
-fun QuestionnaireScreenContent(
-    navController: NavHostController,
-    questionnaireViewModel: QuestionnaireViewModel,
-    context: Context
-) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -115,7 +99,14 @@ fun QuestionnaireScreenContent(
 
         item {
             // Timings section
-            Timings(questionnaireViewModel)
+            Timings(
+                eatTime,
+                sleepTime,
+                wakeUpTime,
+                eatTimeDialogState,
+                sleepTimeDialogState,
+                wakeUpTimeDialogState
+            )
         }
 
         item {
@@ -134,6 +125,19 @@ fun QuestionnaireScreenContent(
             }
         }
     }
+
+    ShowTimePickerDialog(eatTimeDialogState) { selectedTime ->
+        eatTime.value = selectedTime
+    }
+
+    ShowTimePickerDialog(sleepTimeDialogState) { selectedTime ->
+        sleepTime.value = selectedTime
+    }
+
+    ShowTimePickerDialog(wakeUpTimeDialogState) { selectedTime ->
+        wakeUpTime.value = selectedTime
+    }
+
 }
 
 @Composable
@@ -335,35 +339,44 @@ fun ShowModal(
 
 @Composable
 fun Timings(
-    questionnaireViewModel: QuestionnaireViewModel,
+    eatTime: MutableState<String>,
+    sleepTime: MutableState<String>,
+    wakeUpTime: MutableState<String>,
+    eatTimeDialogState: MutableState<Boolean>,
+    sleepTmeDialogState: MutableState<Boolean>,
+    wakeUpTimeDialogState: MutableState<Boolean>
 ) {
     Text(
         "Timings",
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp
     )
-    InputRow(stringResource(R.string.eatTime), questionnaireViewModel, "eat")
+    InputRow(
+        stringResource(R.string.eatTime),
+        eatTime,
+        eatTimeDialogState
+    )
     Spacer(modifier = Modifier.height(10.dp))
-    InputRow(stringResource(R.string.sleepTime), questionnaireViewModel,"sleep")
+    InputRow(
+        stringResource(R.string.sleepTime),
+        sleepTime,
+        sleepTmeDialogState
+    )
     Spacer(modifier = Modifier.height(10.dp))
-    InputRow(stringResource(R.string.wakeUpTime), questionnaireViewModel, "wakeUp")
+    InputRow(
+        stringResource(R.string.wakeUpTime),
+        wakeUpTime,
+        wakeUpTimeDialogState
+    )
     Spacer(modifier = Modifier.height(10.dp))
 }
 
 @Composable
 fun InputRow(
     question: String,
-    questionnaireViewModel: QuestionnaireViewModel,
-    timeType: String
+    time: MutableState<String>,
+    timeState: MutableState<Boolean>
 ) {
-    val initialTime = when (timeType) {
-        "eat" -> questionnaireViewModel.eatTimePlaceholder
-        "sleep" -> questionnaireViewModel.sleepTimePlaceholder
-        else -> questionnaireViewModel.wakeUpTimePlaceholder
-    }
-
-    val mTimePickerDialog =
-        TimePickerFun(initialTime)
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -381,38 +394,19 @@ fun InputRow(
                     .fillMaxWidth()
                     .height(48.dp)
                     .weight(0.3f)
-                    .clickable { mTimePickerDialog.show() }
+                    .clickable {
+                        timeState.value = true
+                    }
             ) {
                 ReadOnlyTimeBox(
-                    timeText = initialTime.value,
+                    timeText = time.value,
                     onIconClick = {
-                        mTimePickerDialog.show()
+                        timeState.value = true
                     }
                 )
             }
         }
     }
-}
-
-@Composable
-fun TimePickerFun(
-    mTime: MutableState<String>
-): TimePickerDialog {
-    val mContext = LocalContext.current
-    val mCalendar = Calendar.getInstance()
-
-    val mHour = mCalendar.get(Calendar.HOUR_OF_DAY)
-    val mMinute = mCalendar.get(Calendar.MINUTE)
-
-    mCalendar.time = Calendar.getInstance().time
-
-    // time picker value
-    return TimePickerDialog(
-        mContext,
-        { _, mHour: Int, mMinute: Int ->
-            mTime.value = String.format("%02d:%02d", mHour, mMinute)
-        }, mHour, mMinute, false
-    )
 }
 
 @Composable
@@ -456,5 +450,23 @@ fun ReadOnlyTimeBox(
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
+
+@Composable
+fun ShowTimePickerDialog(
+    state: MutableState<Boolean>,
+    onTimeSelected: (String) -> Unit
+) {
+    if (state.value) {
+        TimePickerDialog(
+            onCancel = { state.value = false },
+            onConfirm = { calendar ->
+                val hour = calendar.get(Calendar.HOUR_OF_DAY)
+                val minute = calendar.get(Calendar.MINUTE)
+                onTimeSelected(String.format("%02d:%02d", hour, minute))
+                state.value = false
+            }
+        )
     }
 }
