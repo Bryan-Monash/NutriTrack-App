@@ -2,6 +2,7 @@ package com.fit2081.bryan_34309861_a3_app.ui.screens.RegisterScreen
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -42,6 +43,16 @@ class RegisterViewModel(context: Context): ViewModel() {
     val patientNamePlaceholder = mutableStateOf("")
     val passwordPlaceholder = mutableStateOf("")
     val confirmPasswordPlaceholder = mutableStateOf("")
+
+    /**
+     * Derive state to hold the password requirement only if the password changes
+     */
+    val isLongEnough = derivedStateOf { passwordPlaceholder.value.length >= 8 }
+    val hasUppercase = derivedStateOf { passwordPlaceholder.value.any { it.isUpperCase() } }
+    val hasLowercase = derivedStateOf { passwordPlaceholder.value.any { it.isLowerCase() } }
+    val hasDigit = derivedStateOf { passwordPlaceholder.value.any { it.isDigit() } }
+    val noSpaces = derivedStateOf { !passwordPlaceholder.value.contains(" ") }
+    val hasSpecialChar = derivedStateOf { passwordPlaceholder.value.any { it in "!@#\$%^&*()-_=+[]{};:'\",.<>?/\\|`~" } }
 
     /**
      * Public mutable boolean that serves as the state of the dropdown menu
@@ -165,16 +176,6 @@ class RegisterViewModel(context: Context): ViewModel() {
     }
 
     /**
-     * Validates that the password does not contain any spaces or newline characters.
-     *
-     * @param password The password to validate.
-     * @return `true` if the password is valid, `false` otherwise.
-     */
-    private fun passwordValidator(password: String): Boolean {
-        return !password.contains(Regex("\\s")) // \s matches any whitespace (space, tab, newline, etc.)
-    }
-
-    /**
      * Validates patient input during registration.
      *
      * The validation checks the following:
@@ -224,8 +225,28 @@ class RegisterViewModel(context: Context): ViewModel() {
                     Toast.makeText(context, "Password field cannot be empty", Toast.LENGTH_SHORT).show()
                 }
 
-                !passwordValidator(password) -> {
+                password.contains(" ") -> {
                     Toast.makeText(context, "Password cannot contain any spaces", Toast.LENGTH_SHORT).show()
+                }
+
+                password.length < 8 -> {
+                    Toast.makeText(context, "Password must be at least 8 characters long", Toast.LENGTH_SHORT).show()
+                }
+
+                !password.any { it.isUpperCase() } -> {
+                    Toast.makeText(context, "Password must include at least one uppercase letter", Toast.LENGTH_SHORT).show()
+                }
+
+                !password.any { it.isLowerCase() } -> {
+                    Toast.makeText(context, "Password must include at least one lowercase letter", Toast.LENGTH_SHORT).show()
+                }
+
+                !password.any { it.isDigit() } -> {
+                    Toast.makeText(context, "Password must include at least one number", Toast.LENGTH_SHORT).show()
+                }
+
+                !password.any { it in "!@#\$%^&*()-_=+[]{};:'\",.<>?/\\|`~" } -> {
+                    Toast.makeText(context, "Password must include at least one special character", Toast.LENGTH_SHORT).show()
                 }
 
                 password != confirmPassword -> {

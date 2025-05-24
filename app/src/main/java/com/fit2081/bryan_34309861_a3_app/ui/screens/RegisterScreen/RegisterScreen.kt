@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.fit2081.bryan_34309861_a3_app.AppDashboardScreen
 import com.fit2081.bryan_34309861_a3_app.R
+import com.fit2081.bryan_34309861_a3_app.ui.composables.PasswordRequirementItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -200,6 +201,13 @@ fun RegisterField(
         },
         singleLine = true
     )
+    Spacer(modifier = Modifier.height(8.dp))
+    PasswordRequirementItem("At least 8 characters", registerViewModel.isLongEnough.value)
+    PasswordRequirementItem("Contains uppercase", registerViewModel.hasUppercase.value)
+    PasswordRequirementItem("Contains lowercase", registerViewModel.hasLowercase.value)
+    PasswordRequirementItem("Contains a number", registerViewModel.hasDigit.value)
+    PasswordRequirementItem("Contains a special character", registerViewModel.hasSpecialChar.value)
+    PasswordRequirementItem("No spaces", registerViewModel.noSpaces.value)
     Spacer(modifier = Modifier.height(12.dp))
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(0.85f),

@@ -155,7 +155,7 @@ fun InsightContent(
                         progress = info.first,
                         progressColor = info.third,
                         modifier = Modifier
-                            .fillMaxWidth(0.7f)
+                            .fillMaxWidth(0.65f)
                     )
 
                     Text(

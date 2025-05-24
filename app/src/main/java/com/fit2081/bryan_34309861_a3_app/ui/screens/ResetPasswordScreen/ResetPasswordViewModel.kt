@@ -2,6 +2,7 @@ package com.fit2081.bryan_34309861_a3_app.ui.screens.ResetPasswordScreen
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -57,6 +58,16 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
      * Public mutable booleans that serve as the state of the patient being verified
      */
     val isVerified = mutableStateOf(false)
+
+    /**
+     * Derive state to hold the password requirement only if the password changes
+     */
+    val isLongEnough = derivedStateOf { passwordPlaceholder.value.length >= 8 }
+    val hasUppercase = derivedStateOf { passwordPlaceholder.value.any { it.isUpperCase() } }
+    val hasLowercase = derivedStateOf { passwordPlaceholder.value.any { it.isLowerCase() } }
+    val hasDigit = derivedStateOf { passwordPlaceholder.value.any { it.isDigit() } }
+    val noSpaces = derivedStateOf { !passwordPlaceholder.value.contains(" ") }
+    val hasSpecialChar = derivedStateOf { passwordPlaceholder.value.any { it in "!@#\$%^&*()-_=+[]{};:'\",.<>?/\\|`~" } }
 
     /**
      * Initialize the ViewModel by loading the list of all patients from the repository
@@ -129,16 +140,6 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
     }
 
     /**
-     * Validates that the password does not contain any spaces or newline characters.
-     *
-     * @param password The password to validate.
-     * @return `true` if the password is valid, `false` otherwise.
-     */
-    private fun passwordValidator(password: String): Boolean {
-        return !password.contains(Regex("\\s")) // \s matches any whitespace (space, tab, newline, etc.)
-    }
-
-    /**
      * Returns a lambda function that resets the patient's password based on provided input validation.
      *
      * This function performs the following checks before updating the password:
@@ -170,8 +171,24 @@ class ResetPasswordViewModel(context: Context) : ViewModel() {
                     Toast.makeText(context, "Password does not match", Toast.LENGTH_SHORT).show()
                 }
 
-                !passwordValidator(newPassword) -> {
-                    Toast.makeText(context, "Password cannot contain any space", Toast.LENGTH_SHORT).show()
+                newPassword.length < 8 -> {
+                    Toast.makeText(context, "Password must be at least 8 characters long", Toast.LENGTH_SHORT).show()
+                }
+
+                !newPassword.any { it.isUpperCase() } -> {
+                    Toast.makeText(context, "Password must include at least one uppercase letter", Toast.LENGTH_SHORT).show()
+                }
+
+                !newPassword.any { it.isLowerCase() } -> {
+                    Toast.makeText(context, "Password must include at least one lowercase letter", Toast.LENGTH_SHORT).show()
+                }
+
+                !newPassword.any { it.isDigit() } -> {
+                    Toast.makeText(context, "Password must include at least one number", Toast.LENGTH_SHORT).show()
+                }
+
+                !newPassword.any { it in "!@#\$%^&*()-_=+[]{};:'\",.<>?/\\|`~" } -> {
+                    Toast.makeText(context, "Password must include at least one special character", Toast.LENGTH_SHORT).show()
                 }
 
                 else -> {
